@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { LawAccordion } from '@/components/laws/LawAccordion'
 import { laws } from '@/data/laws-2025-26'
-import { toArabicNumerals, getFrequencyBadge } from '@/lib/utils'
+import { toArabicNumerals } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { ChevronRight, ChevronLeft, Languages } from 'lucide-react'
 
 interface LawDetailProps {
   lawId: number
@@ -16,6 +17,7 @@ export function LawDetail({ lawId }: LawDetailProps) {
   const law = laws.find((l) => l.id === lawId)
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
   const [allExpanded, setAllExpanded] = useState(false)
+  const [showEnglish, setShowEnglish] = useState(false)
 
   if (!law) {
     return (
@@ -23,15 +25,13 @@ export function LawDetail({ lawId }: LawDetailProps) {
         <p className="text-gray-500">القانون غير موجود</p>
         <button
           onClick={() => router.push('/')}
-          className="mt-4 text-primary-600 underline"
+          className="mt-4 text-green-600 underline"
         >
           العودة للقائمة
         </button>
       </div>
     )
   }
-
-  const badge = getFrequencyBadge(law.frequency)
 
   const handleToggle = (id: string) => {
     const newExpanded = new Set(expandedIds)
@@ -67,39 +67,31 @@ export function LawDetail({ lawId }: LawDetailProps) {
       {/* Back button */}
       <button
         onClick={() => router.push('/')}
-        className="flex items-center gap-2 text-gray-600 mb-4 hover:text-primary-600 transition-colors"
+        className="flex items-center gap-2 text-gray-600 mb-4 hover:text-green-600 transition-colors"
       >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-        <span>العودة</span>
+        <ChevronRight className="w-5 h-5" />
+        <span>{showEnglish ? 'Back' : 'العودة'}</span>
       </button>
 
       {/* Header */}
       <header className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-4xl">{law.icon}</span>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm text-gray-500">
-                القانون {toArabicNumerals(law.id)}
-              </span>
-              <span
-                className={cn(
-                  'text-xs px-2 py-0.5 rounded-full border',
-                  badge.className
-                )}
-              >
-                {badge.emoji} {badge.label}
-              </span>
-            </div>
+          <div className="flex-1">
+            <span className="text-sm text-gray-500">
+              {showEnglish ? `Law ${law.id}` : `القانون ${toArabicNumerals(law.id)}`}
+            </span>
             <h1 className="text-xl font-bold text-gray-900">
-              {law.titleAr.replace(/القانون [^ ]+ - /, '')}
+              {showEnglish
+                ? law.titleEn
+                : law.titleAr.replace(/القانون [^ ]+ - /, '')}
             </h1>
           </div>
         </div>
         <p className="text-sm text-gray-500">
-          {toArabicNumerals(law.articles.length)} مواد
+          {showEnglish
+            ? `${law.articles.length} articles`
+            : `${toArabicNumerals(law.articles.length)} مادة`}
         </p>
       </header>
 
@@ -110,11 +102,25 @@ export function LawDetail({ lawId }: LawDetailProps) {
           className={cn(
             'flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors',
             allExpanded
-              ? 'bg-primary-100 text-primary-700'
+              ? 'bg-green-100 text-green-700'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           )}
         >
-          {allExpanded ? 'طي الكل' : 'توسيع الكل'}
+          {allExpanded
+            ? (showEnglish ? 'Collapse All' : 'طي الكل')
+            : (showEnglish ? 'Expand All' : 'توسيع الكل')}
+        </button>
+        <button
+          onClick={() => setShowEnglish(!showEnglish)}
+          className={cn(
+            'py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center gap-2',
+            showEnglish
+              ? 'bg-blue-100 text-blue-700'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          )}
+        >
+          <Languages className="w-4 h-4" />
+          {showEnglish ? 'العربية' : 'English'}
         </button>
       </div>
 
@@ -123,6 +129,7 @@ export function LawDetail({ lawId }: LawDetailProps) {
         articles={law.articles}
         expandedIds={expandedIds}
         onToggle={handleToggle}
+        showEnglish={showEnglish}
       />
 
       {/* Navigation */}
@@ -130,12 +137,10 @@ export function LawDetail({ lawId }: LawDetailProps) {
         {prevLaw ? (
           <button
             onClick={() => router.push(`/law/${prevLaw}`)}
-            className="flex items-center gap-2 text-primary-600 hover:text-primary-700"
+            className="flex items-center gap-2 text-green-600 hover:text-green-700"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            <span>القانون السابق</span>
+            <ChevronRight className="w-5 h-5" />
+            <span>{showEnglish ? 'Previous Law' : 'القانون السابق'}</span>
           </button>
         ) : (
           <div />
@@ -143,12 +148,10 @@ export function LawDetail({ lawId }: LawDetailProps) {
         {nextLaw ? (
           <button
             onClick={() => router.push(`/law/${nextLaw}`)}
-            className="flex items-center gap-2 text-primary-600 hover:text-primary-700"
+            className="flex items-center gap-2 text-green-600 hover:text-green-700"
           >
-            <span>القانون التالي</span>
-            <svg className="w-5 h-5 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <span>{showEnglish ? 'Next Law' : 'القانون التالي'}</span>
+            <ChevronLeft className="w-5 h-5" />
           </button>
         ) : (
           <div />

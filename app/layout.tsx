@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { BottomNav } from '@/components/ui/BottomNav'
+import { SessionProvider } from '@/components/providers/SessionProvider'
 
 export const metadata: Metadata = {
   title: 'RefereesHub - قوانين اللعبة',
@@ -31,11 +31,10 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="font-arabic bg-gray-50 text-gray-900 min-h-screen pb-20">
-        <main className="max-w-lg mx-auto">
+      <body className="font-arabic bg-gray-50 text-gray-900 min-h-screen">
+        <SessionProvider>
           {children}
-        </main>
-        <BottomNav />
+        </SessionProvider>
       </body>
     </html>
   )
