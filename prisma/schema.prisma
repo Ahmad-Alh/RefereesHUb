@@ -54,7 +54,7 @@ model Law {
   // Relations
   articles    Article[]
   questions   Question[]
-  videos      Video[]
+  videos      VideoLaw[]
 
   @@index([orderIndex])
 }
