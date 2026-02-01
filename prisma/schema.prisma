@@ -1,0 +1,376 @@
+// Prisma Schema for RefereesHub
+// Football Referee Training Application
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+enum UserRole {
+  REFEREE
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  refereeNumber String    @unique @db.VarChar(4) // 1-4 digit referee number
+  name          String
+  email         String    @unique
+  password      String    // bcrypt hashed
+  role          UserRole  @default(REFEREE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  quizAttempts  QuizAttempt[]
+  matchNotes    MatchNote[]
+  flashcardProgress FlashcardProgress[]
+
+  @@index([email])
+  @@index([refereeNumber])
+}
+
+// ============================================
+// LAWS OF THE GAME (IFAB)
+// ============================================
+
+model Law {
+  id          Int      @id // 1-17
+  titleAr     String
+  titleEn     String
+  icon        String   // Emoji icon
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  articles    Article[]
+  questions   Question[]
+  videos      Video[]
+
+  @@index([orderIndex])
+}
+
+model Article {
+  id          String   @id // e.g., "1.1", "12.2"
+  lawId       Int
+  titleAr     String
+  titleEn     String?
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  law         Law      @relation(fields: [lawId], references: [id], onDelete: Cascade)
+  subsections Subsection[]
+  paragraphs  Paragraph[] // Direct paragraphs (no subsection)
+
+  @@index([lawId])
+  @@index([orderIndex])
+}
+
+model Subsection {
+  id          String   @id // e.g., "12.2.1"
+  articleId   String
+  titleAr     String
+  titleEn     String?
+  orderIndex  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  paragraphs  Paragraph[]
+
+  @@index([articleId])
+  @@index([orderIndex])
+}
+
+model Paragraph {
+  id           String     @id @default(cuid())
+  articleId    String?
+  subsectionId String?
+  textAr       String     @db.Text
+  textEn       String?    @db.Text
+  orderIndex   Int        @default(0)
+  hasDiagram   Boolean    @default(false)
+  diagramUrl   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  article      Article?   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  subsection   Subsection? @relation(fields: [subsectionId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@index([subsectionId])
+  @@index([orderIndex])
+}
+
+// ============================================
+// QUIZ SYSTEM
+// ============================================
+
+enum QuestionType {
+  MCQ                // Multiple choice (4 options)
+  TRUE_FALSE         // صح / خطأ
+  YELLOW_CARD        // Should yellow card be given?
+  RED_CARD           // Should red card be given?
+  DOGSO              // Denying Obvious Goal Scoring Opportunity
+  SPA                // Stopping Promising Attack
+  OFFSIDE            // Offside situation type
+  RESTART            // What restart should be given?
+}
+
+enum OffsideType {
+  INTERFERING_PLAY
+  INTERFERING_OPPONENT
+  GAINING_ADVANTAGE
+  NO_OFFSIDE
+}
+
+enum RestartType {
+  DIRECT_FREE_KICK
+  INDIRECT_FREE_KICK
+  PENALTY_KICK
+  DROP_BALL
+  GOAL_KICK
+  CORNER_KICK
+  THROW_IN
+}
+
+model Quiz {
+  id           String    @id @default(cuid())
+  titleAr      String
+  titleEn      String?
+  descriptionAr String?  @db.Text
+  descriptionEn String?  @db.Text
+  isPublished  Boolean   @default(false)
+  isPractice   Boolean   @default(false) // For practice mode question bank
+  publishedAt  DateTime?
+  createdById  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  questions    QuizQuestion[]
+  attempts     QuizAttempt[]
+
+  @@index([isPublished])
+  @@index([isPractice])
+  @@index([publishedAt])
+}
+
+model Question {
+  id              String       @id @default(cuid())
+  questionTextAr  String       @db.Text
+  questionTextEn  String?      @db.Text
+  questionType    QuestionType
+  imageUrl        String?
+  videoUrl        String?
+
+  // For MCQ - correct answer index (0-3)
+  // For TRUE_FALSE, YELLOW_CARD, RED_CARD, DOGSO, SPA - 0 (No) or 1 (Yes)
+  // For OFFSIDE - maps to OffsideType enum
+  // For RESTART - maps to RestartType enum
+  correctAnswer   Int
+
+  explanationAr   String?      @db.Text
+  explanationEn   String?      @db.Text
+
+  // Law reference (optional)
+  lawId           Int?
+  articleId       String?
+
+  isAIGenerated   Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  law             Law?         @relation(fields: [lawId], references: [id])
+  options         QuestionOption[]
+  quizQuestions   QuizQuestion[]
+  userAnswers     UserAnswer[]
+
+  @@index([questionType])
+  @@index([lawId])
+  @@index([isAIGenerated])
+}
+
+model QuestionOption {
+  id          String   @id @default(cuid())
+  questionId  String
+  textAr      String
+  textEn      String?
+  orderIndex  Int      @default(0)
+
+  // Relations
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@index([orderIndex])
+}
+
+model QuizQuestion {
+  id          String   @id @default(cuid())
+  quizId      String
+  questionId  String
+  orderIndex  Int      @default(0)
+
+  // Relations
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, questionId])
+  @@index([quizId])
+  @@index([questionId])
+  @@index([orderIndex])
+}
+
+model QuizAttempt {
+  id          String    @id @default(cuid())
+  userId      String
+  quizId      String
+  score       Int?      // Calculated after completion
+  totalQuestions Int
+  completedAt DateTime?
+  startedAt   DateTime  @default(now())
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers     UserAnswer[]
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([completedAt])
+}
+
+model UserAnswer {
+  id            String      @id @default(cuid())
+  attemptId     String
+  questionId    String
+  selectedAnswer Int        // The answer index selected by user
+  isCorrect     Boolean
+  answeredAt    DateTime    @default(now())
+
+  // Relations
+  attempt       QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+  @@index([questionId])
+  @@index([isCorrect])
+}
+
+// ============================================
+// VIDEO LIBRARY
+// ============================================
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum RefereePosition {
+  CENTER_REF
+  ASSISTANT_REF
+  FOURTH_OFFICIAL
+  ALL
+}
+
+model Video {
+  id              String          @id @default(cuid())
+  titleAr         String
+  titleEn         String?
+  descriptionAr   String?         @db.Text
+  descriptionEn   String?         @db.Text
+  url             String          // YouTube/Vimeo URL or uploaded file URL
+  thumbnailUrl    String?
+  duration        Int?            // Duration in seconds
+  difficulty      DifficultyLevel @default(BEGINNER)
+  position        RefereePosition @default(ALL)
+  isControversial Boolean         @default(false)
+  isPublished     Boolean         @default(true)
+  uploadedById    String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations - many-to-many with laws
+  laws            VideoLaw[]
+
+  @@index([difficulty])
+  @@index([position])
+  @@index([isControversial])
+  @@index([isPublished])
+}
+
+model VideoLaw {
+  id      String @id @default(cuid())
+  videoId String
+  lawId   Int
+
+  // Relations
+  video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  law     Law    @relation(fields: [lawId], references: [id], onDelete: Cascade)
+
+  @@unique([videoId, lawId])
+  @@index([videoId])
+  @@index([lawId])
+}
+
+// ============================================
+// MATCH NOTES
+// ============================================
+
+model MatchNote {
+  id                String    @id @default(cuid())
+  userId            String
+  matchDate         DateTime
+  matchTime         String?   // Time as string (e.g., "14:30")
+  matchName         String    // e.g., "الشارقة vs العين"
+  hasEvaluator      Boolean   @default(false)
+  evaluatorFeedback String?   @db.Text
+  personalNotes     String?   @db.Text
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([matchDate])
+  @@index([hasEvaluator])
+}
+
+// ============================================
+// FLASHCARD PROGRESS (Optional - for spaced repetition)
+// ============================================
+
+model FlashcardProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  questionId  String   // Reusing questions as flashcards
+  interval    Int      @default(0)
+  repetition  Int      @default(0)
+  easeFactor  Float    @default(2.5)
+  nextReview  DateTime @default(now())
+  lastReviewed DateTime?
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+  @@index([userId])
+  @@index([nextReview])
+}

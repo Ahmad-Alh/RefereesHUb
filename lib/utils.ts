@@ -76,8 +76,8 @@ export function debounce<T extends (...args: any[]) => any>(
 }
 
 // Format date in Arabic
-export function formatDateAr(timestamp: number): string {
-  const date = new Date(timestamp)
+export function formatDateAr(input: number | Date): string {
+  const date = input instanceof Date ? input : new Date(input)
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'long',

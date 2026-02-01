@@ -2,35 +2,34 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { BookOpen, GraduationCap, Video, FileText, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   {
     href: '/',
     label: 'القوانين',
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>
-    ),
+    icon: BookOpen,
+  },
+  {
+    href: '/quizzes',
+    label: 'الاختبارات',
+    icon: GraduationCap,
+  },
+  {
+    href: '/videos',
+    label: 'الفيديو',
+    icon: Video,
+  },
+  {
+    href: '/notes',
+    label: 'الملاحظات',
+    icon: FileText,
   },
   {
     href: '/search',
     label: 'بحث',
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/flashcards',
-    label: 'البطاقات',
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-      </svg>
-    ),
+    icon: Search,
   },
 ]
 
@@ -39,24 +38,25 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-bottom">
-      <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
+      <div className="flex justify-around items-center h-16 max-w-lg mx-auto px-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href ||
             (item.href !== '/' && pathname.startsWith(item.href))
+          const Icon = item.icon
 
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 p-2 rounded-lg min-w-[72px] transition-colors',
+                'flex flex-col items-center justify-center gap-0.5 p-1.5 rounded-lg min-w-[56px] transition-colors',
                 isActive
-                  ? 'text-primary-600 bg-primary-50'
+                  ? 'text-green-600 bg-green-50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               )}
             >
-              {item.icon}
-              <span className="text-xs font-medium">{item.label}</span>
+              <Icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           )
         })}
