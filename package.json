@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "npm install",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "ci": "npm ci && npm run build"
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "14.2.5",
