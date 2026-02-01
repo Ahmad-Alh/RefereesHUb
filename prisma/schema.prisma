@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Law {
+  id          Int       @id @default(autoincrement())
+  titleAr     String
+  titleEn     String
+  icon        String?
+  frequency   String    @default("medium") // high, medium, low
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  articles    Article[]
+  questions   Question[]
+  videos      Video[]
+}
+
+model Article {
+  id          String    @id
+  titleAr     String
+  lawId       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  law         Law       @relation(fields: [lawId], references: [id], onDelete: Cascade)
+  subsections Subsection[]
+  paragraphs  Paragraph[]
+}
+
+model Subsection {
+  id          String    @id
+  titleAr     String
+  articleId   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  article     Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  paragraphs  Paragraph[]
+}
+
+model Paragraph {
+  id            String     @id
+  textAr        String
+  isHighlighted Boolean    @default(false)
+  articleId     String?
+  subsectionId  String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relations
+  article       Article?   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  subsection    Subsection? @relation(fields: [subsectionId], references: [id], onDelete: Cascade)
+}
+
+model Question {
+  id          String    @id @default(cuid())
+  frontAr     String    // Question text
+  backAr      String    // Answer text
+  lawId       Int
+  articleId   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  law         Law       @relation(fields: [lawId], references: [id], onDelete: Cascade)
+}
+
+model Video {
+  id          String    @id @default(cuid())
+  titleAr     String
+  titleEn     String?
+  url         String
+  description String?
+  lawId       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  law         Law       @relation(fields: [lawId], references: [id], onDelete: Cascade)
+}
+
+model Flashcard {
+  id          String    @id @default(cuid())
+  type        String    @default("user") // user or admin
+  lawId       Int
+  articleId   String?
+  frontAr     String    // Question
+  backAr      String    // Answer (verbatim IFAB)
+  sourceText  String?   // Original highlighted text
+
+  // SM-2 Algorithm fields
+  interval    Int       @default(0)    // Days until next review
+  repetition  Int       @default(0)    // Times reviewed
+  easeFactor  Float     @default(2.5)  // Adjusts per performance
+  nextReview  DateTime?
+
+  createdAt   DateTime  @default(now())
+  lastReviewed DateTime?
+}
+
+model UserProgress {
+  id          String    @id @default(cuid())
+  odId        String
+  lawId       Int
+  articleId   String?
+  readCount   Int       @default(0)
+  lastRead    DateTime?
+  highlights  String[]  // Paragraph IDs
+  bookmarked  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
