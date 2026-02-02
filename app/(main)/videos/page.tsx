@@ -7,8 +7,7 @@ import {
   Filter,
   Search,
   Loader2,
-  Video,
-  AlertTriangle
+  Video
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -18,23 +17,7 @@ interface VideoItem {
   descriptionAr: string | null
   url: string
   thumbnailUrl: string | null
-  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
-  position: 'CENTER_REF' | 'ASSISTANT_REF' | 'FOURTH_OFFICIAL' | 'ALL'
-  isControversial: boolean
   category?: string
-}
-
-const difficultyLabels = {
-  BEGINNER: 'مبتدئ',
-  INTERMEDIATE: 'متوسط',
-  ADVANCED: 'متقدم',
-}
-
-const positionLabels = {
-  CENTER_REF: 'حكم الوسط',
-  ASSISTANT_REF: 'الحكم المساعد',
-  FOURTH_OFFICIAL: 'الحكم الرابع',
-  ALL: 'الجميع',
 }
 
 // Video categories
@@ -51,25 +34,17 @@ export default function VideosPage() {
   const [videos, setVideos] = useState<VideoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
-    difficulty: '',
-    position: '',
-    category: '',
-    controversial: false,
-  })
+  const [category, setCategory] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     fetchVideos()
-  }, [filters])
+  }, [category])
 
   const fetchVideos = async () => {
     try {
       const params = new URLSearchParams()
-      if (filters.difficulty) params.append('difficulty', filters.difficulty)
-      if (filters.position) params.append('position', filters.position)
-      if (filters.category) params.append('category', filters.category)
-      if (filters.controversial) params.append('controversial', 'true')
+      if (category) params.append('category', category)
 
       const response = await fetch(`/api/videos?${params.toString()}`)
       if (response.ok) {
@@ -135,7 +110,7 @@ export default function VideosPage() {
 
         {/* Filter Options */}
         {showFilters && (
-          <div className="bg-white rounded-xl p-4 border border-gray-100 space-y-4">
+          <div className="bg-white rounded-xl p-4 border border-gray-100">
             {/* Category Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -143,10 +118,10 @@ export default function VideosPage() {
               </label>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setFilters((prev) => ({ ...prev, category: '' }))}
+                  onClick={() => setCategory('')}
                   className={cn(
                     'px-3 py-1.5 text-sm rounded-full transition-colors',
-                    filters.category === ''
+                    category === ''
                       ? 'bg-green-500 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   )}
@@ -156,10 +131,10 @@ export default function VideosPage() {
                 {videoCategories.map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => setFilters((prev) => ({ ...prev, category: cat.id }))}
+                    onClick={() => setCategory(cat.id)}
                     className={cn(
                       'px-3 py-1.5 text-sm rounded-full transition-colors flex items-center gap-1',
-                      filters.category === cat.id
+                      category === cat.id
                         ? 'bg-green-500 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     )}
@@ -169,84 +144,6 @@ export default function VideosPage() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Difficulty */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                المستوى
-              </label>
-              <div className="flex gap-2">
-                {(['', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const).map(
-                  (level) => (
-                    <button
-                      key={level}
-                      onClick={() =>
-                        setFilters((prev) => ({ ...prev, difficulty: level }))
-                      }
-                      className={cn(
-                        'px-3 py-1.5 text-sm rounded-full transition-colors',
-                        filters.difficulty === level
-                          ? 'bg-green-500 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      )}
-                    >
-                      {level === '' ? 'الكل' : difficultyLabels[level]}
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
-
-            {/* Position */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                المنصب
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {(
-                  ['', 'CENTER_REF', 'ASSISTANT_REF', 'FOURTH_OFFICIAL'] as const
-                ).map((pos) => (
-                  <button
-                    key={pos}
-                    onClick={() =>
-                      setFilters((prev) => ({ ...prev, position: pos }))
-                    }
-                    className={cn(
-                      'px-3 py-1.5 text-sm rounded-full transition-colors',
-                      filters.position === pos
-                        ? 'bg-green-500 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    )}
-                  >
-                    {pos === '' ? 'الكل' : positionLabels[pos]}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Controversial Toggle */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">قرارات مثيرة للجدل فقط</span>
-              <button
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    controversial: !prev.controversial,
-                  }))
-                }
-                className={cn(
-                  'relative w-12 h-6 rounded-full transition-colors',
-                  filters.controversial ? 'bg-green-500' : 'bg-gray-300'
-                )}
-              >
-                <span
-                  className={cn(
-                    'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all',
-                    filters.controversial ? 'right-1' : 'right-7'
-                  )}
-                />
-              </button>
             </div>
           </div>
         )}
@@ -302,12 +199,6 @@ function VideoCard({ video }: { video: VideoItem }) {
             <Play className="w-6 h-6 text-green-600 mr-[-2px]" />
           </div>
         </div>
-        {video.isControversial && (
-          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs bg-yellow-500 text-white px-2 py-1 rounded-full">
-            <AlertTriangle className="w-3 h-3" />
-            مثير للجدل
-          </span>
-        )}
       </div>
 
       {/* Info */}
@@ -320,19 +211,11 @@ function VideoCard({ video }: { video: VideoItem }) {
             {video.descriptionAr}
           </p>
         )}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-            {difficultyLabels[video.difficulty]}
+        {video.category && (
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+            {getCategoryLabel(video.category)}
           </span>
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-            {positionLabels[video.position]}
-          </span>
-          {video.category && (
-            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-              {getCategoryLabel(video.category)}
-            </span>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )
