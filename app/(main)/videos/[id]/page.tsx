@@ -45,15 +45,8 @@ export default function VideoDetailPage({ params }: PageProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push(`/login?callbackUrl=/videos/${id}`)
-      return
-    }
-
-    if (status === 'authenticated') {
-      fetchVideo()
-    }
-  }, [status, id, router])
+    fetchVideo()
+  }, [id])
 
   const fetchVideo = async () => {
     try {

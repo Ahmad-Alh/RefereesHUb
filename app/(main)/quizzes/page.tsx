@@ -36,16 +36,9 @@ export default function QuizzesPage() {
   const [practiceCount, setPracticeCount] = useState(0)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login?callbackUrl=/quizzes')
-      return
-    }
-
-    if (status === 'authenticated') {
-      fetchQuizzes()
-      fetchPracticeCount()
-    }
-  }, [status, router])
+    fetchQuizzes()
+    fetchPracticeCount()
+  }, [])
 
   const fetchQuizzes = async () => {
     try {

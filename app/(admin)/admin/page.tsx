@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import { toArabicNumerals } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboard() {
   // Fetch statistics
   const [
@@ -174,7 +176,7 @@ export default async function AdminDashboard() {
           <p className="text-gray-500 text-center py-4">لا توجد محاولات بعد</p>
         ) : (
           <div className="space-y-3">
-            {recentAttempts.map((attempt) => (
+            {recentAttempts.map((attempt: { id: string; user: { name: string | null; refereeNumber: string | null }; quiz: { titleAr: string } | null; score: number | null }) => (
               <div
                 key={attempt.id}
                 className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"

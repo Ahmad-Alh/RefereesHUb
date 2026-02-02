@@ -55,15 +55,8 @@ export default function VideosPage() {
   const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login?callbackUrl=/videos')
-      return
-    }
-
-    if (status === 'authenticated') {
-      fetchVideos()
-    }
-  }, [status, router, filters])
+    fetchVideos()
+  }, [filters])
 
   const fetchVideos = async () => {
     try {
