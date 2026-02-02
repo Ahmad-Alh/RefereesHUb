@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import {
   Play,
@@ -9,10 +8,8 @@ import {
   Search,
   Loader2,
   Video,
-  AlertTriangle,
-  BookOpen
+  AlertTriangle
 } from 'lucide-react'
-import { toArabicNumerals } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
 interface VideoItem {
@@ -24,7 +21,7 @@ interface VideoItem {
   difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
   position: 'CENTER_REF' | 'ASSISTANT_REF' | 'FOURTH_OFFICIAL' | 'ALL'
   isControversial: boolean
-  laws: { lawId: number }[]
+  category?: string
 }
 
 const difficultyLabels = {
@@ -40,8 +37,16 @@ const positionLabels = {
   ALL: 'الجميع',
 }
 
+// Video categories
+const videoCategories = [
+  { id: 'OFFSIDE', label: 'حالات التسلل', icon: '🚩' },
+  { id: 'HANDBALL', label: 'حالات لمسة اليد', icon: '✋' },
+  { id: 'DOGSO', label: 'ايقاف فرصة محققة أو هجوم واعد', icon: '🎯' },
+  { id: 'PHYSICAL', label: 'التدخلات الجسدية', icon: '💪' },
+  { id: 'ADMINISTRATIVE', label: 'القرارات الادارية', icon: '📋' },
+]
+
 export default function VideosPage() {
-  const { status } = useSession()
   const router = useRouter()
   const [videos, setVideos] = useState<VideoItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -49,7 +54,7 @@ export default function VideosPage() {
   const [filters, setFilters] = useState({
     difficulty: '',
     position: '',
-    lawId: '',
+    category: '',
     controversial: false,
   })
   const [showFilters, setShowFilters] = useState(false)
@@ -63,7 +68,7 @@ export default function VideosPage() {
       const params = new URLSearchParams()
       if (filters.difficulty) params.append('difficulty', filters.difficulty)
       if (filters.position) params.append('position', filters.position)
-      if (filters.lawId) params.append('lawId', filters.lawId)
+      if (filters.category) params.append('category', filters.category)
       if (filters.controversial) params.append('controversial', 'true')
 
       const response = await fetch(`/api/videos?${params.toString()}`)
@@ -86,7 +91,7 @@ export default function VideosPage() {
       )
     : videos
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
@@ -131,6 +136,41 @@ export default function VideosPage() {
         {/* Filter Options */}
         {showFilters && (
           <div className="bg-white rounded-xl p-4 border border-gray-100 space-y-4">
+            {/* Category Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                التصنيف
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setFilters((prev) => ({ ...prev, category: '' }))}
+                  className={cn(
+                    'px-3 py-1.5 text-sm rounded-full transition-colors',
+                    filters.category === ''
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  )}
+                >
+                  الكل
+                </button>
+                {videoCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setFilters((prev) => ({ ...prev, category: cat.id }))}
+                    className={cn(
+                      'px-3 py-1.5 text-sm rounded-full transition-colors flex items-center gap-1',
+                      filters.category === cat.id
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    )}
+                  >
+                    <span>{cat.icon}</span>
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Difficulty */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -185,27 +225,6 @@ export default function VideosPage() {
               </div>
             </div>
 
-            {/* Law Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                القانون
-              </label>
-              <select
-                value={filters.lawId}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, lawId: e.target.value }))
-                }
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm"
-              >
-                <option value="">جميع القوانين</option>
-                {Array.from({ length: 17 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    القانون {toArabicNumerals(i + 1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Controversial Toggle */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-700">قرارات مثيرة للجدل فقط</span>
@@ -255,6 +274,11 @@ export default function VideosPage() {
 function VideoCard({ video }: { video: VideoItem }) {
   const router = useRouter()
 
+  const getCategoryLabel = (categoryId?: string) => {
+    const cat = videoCategories.find(c => c.id === categoryId)
+    return cat ? `${cat.icon} ${cat.label}` : null
+  }
+
   return (
     <div
       onClick={() => router.push(`/videos/${video.id}`)}
@@ -303,15 +327,11 @@ function VideoCard({ video }: { video: VideoItem }) {
           <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
             {positionLabels[video.position]}
           </span>
-          {video.laws.map((law) => (
-            <span
-              key={law.lawId}
-              className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1"
-            >
-              <BookOpen className="w-3 h-3" />
-              القانون {toArabicNumerals(law.lawId)}
+          {video.category && (
+            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+              {getCategoryLabel(video.category)}
             </span>
-          ))}
+          )}
         </div>
       </div>
     </div>

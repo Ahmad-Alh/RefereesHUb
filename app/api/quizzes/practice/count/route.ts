@@ -1,23 +1,33 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sampleQuestions } from '@/data/sample-questions'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const count = await prisma.question.count({
-      where: {
-        quizQuestions: {
-          some: {
-            quiz: {
-              isPractice: true,
+    let count = 0
+
+    try {
+      count = await prisma.question.count({
+        where: {
+          quizQuestions: {
+            some: {
+              quiz: {
+                isPractice: true,
+              },
             },
           },
         },
-      },
-    })
+      })
+    } catch {
+      // Database not available
+    }
+
+    // Fallback to sample questions count
+    if (count === 0) {
+      count = sampleQuestions.length
+    }
 
     return NextResponse.json({ count })
   } catch (error) {
