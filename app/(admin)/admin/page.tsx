@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import { toArabicNumerals } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboard() {
   // Fetch statistics
   const [
