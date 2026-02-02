@@ -7,12 +7,6 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-    }
-
     const body = await req.json()
     const { questionId, selectedAnswer } = body
 

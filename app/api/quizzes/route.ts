@@ -7,12 +7,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-    }
-
     const quizzes = await prisma.quiz.findMany({
       where: {
         isPublished: true,
@@ -22,28 +16,17 @@ export async function GET(req: NextRequest) {
         _count: {
           select: { questions: true },
         },
-        attempts: {
-          where: { userId: session.user.id },
-          orderBy: { completedAt: 'desc' },
-          take: 1,
-        },
       },
       orderBy: { publishedAt: 'desc' },
     })
 
-    const formattedQuizzes = quizzes.map((quiz: { id: string; titleAr: string; descriptionAr: string | null; _count: { questions: number }; publishedAt: Date | null; attempts: { score: number | null; completedAt: Date | null }[] }) => ({
+    const formattedQuizzes = quizzes.map((quiz: { id: string; titleAr: string; descriptionAr: string | null; _count: { questions: number }; publishedAt: Date | null }) => ({
       id: quiz.id,
       titleAr: quiz.titleAr,
       descriptionAr: quiz.descriptionAr,
       questionCount: quiz._count.questions,
       publishedAt: quiz.publishedAt?.toISOString(),
-      userAttempt:
-        quiz.attempts.length > 0 && quiz.attempts[0].completedAt
-          ? {
-              score: quiz.attempts[0].score,
-              completedAt: quiz.attempts[0].completedAt.toISOString(),
-            }
-          : null,
+      userAttempt: null,
     }))
 
     return NextResponse.json({ quizzes: formattedQuizzes })

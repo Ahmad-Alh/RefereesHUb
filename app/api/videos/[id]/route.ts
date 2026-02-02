@@ -10,12 +10,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-    }
-
     const { id } = await params
 
     const video = await prisma.video.findUnique({

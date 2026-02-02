@@ -45,15 +45,8 @@ export default function PracticePage() {
   const [correctAnswer, setCorrectAnswer] = useState<number | null>(null)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login?callbackUrl=/quizzes/practice')
-      return
-    }
-
-    if (status === 'authenticated') {
-      startNewSession()
-    }
-  }, [status, router])
+    startNewSession()
+  }, [])
 
   const startNewSession = async () => {
     setLoading(true)

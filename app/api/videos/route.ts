@@ -7,12 +7,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-    }
-
     const { searchParams } = new URL(req.url)
     const difficulty = searchParams.get('difficulty')
     const position = searchParams.get('position')
