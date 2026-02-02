@@ -36,13 +36,13 @@ export async function GET(req: NextRequest) {
     // Shuffle and take the requested count
     const shuffled = questions.sort(() => Math.random() - 0.5).slice(0, count)
 
-    const formattedQuestions = shuffled.map((q) => ({
+    const formattedQuestions = shuffled.map((q: { id: string; questionTextAr: string; questionType: string; imageUrl: string | null; videoUrl: string | null; options: { id: string; textAr: string; orderIndex: number }[]; lawId: number | null }) => ({
       id: q.id,
       questionTextAr: q.questionTextAr,
       questionType: q.questionType,
       imageUrl: q.imageUrl,
       videoUrl: q.videoUrl,
-      options: q.options.map((opt) => ({
+      options: q.options.map((opt: { id: string; textAr: string; orderIndex: number }) => ({
         id: opt.id,
         textAr: opt.textAr,
         orderIndex: opt.orderIndex,

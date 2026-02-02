@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       orderBy: { publishedAt: 'desc' },
     })
 
-    const formattedQuizzes = quizzes.map((quiz) => ({
+    const formattedQuizzes = quizzes.map((quiz: { id: string; titleAr: string; descriptionAr: string | null; _count: { questions: number }; publishedAt: Date | null; attempts: { score: number | null; completedAt: Date | null }[] }) => ({
       id: quiz.id,
       titleAr: quiz.titleAr,
       descriptionAr: quiz.descriptionAr,

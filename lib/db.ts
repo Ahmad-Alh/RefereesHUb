@@ -94,7 +94,7 @@ export async function getAllProgress(): Promise<UserProgress[]> {
 }
 
 export async function getBookmarkedArticles(): Promise<UserProgress[]> {
-  return await db.progress.filter(p => p.bookmarked).toArray()
+  return await db.progress.filter((p: UserProgress) => p.bookmarked).toArray()
 }
 
 // Utility: Clear all data (for testing)
