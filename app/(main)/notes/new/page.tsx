@@ -46,11 +46,6 @@ export default function NewNotePage() {
     }
   }
 
-  if (status === 'unauthenticated') {
-    router.push('/login?callbackUrl=/notes/new')
-    return null
-  }
-
   return (
     <div className="px-4 py-6">
       {/* Header */}

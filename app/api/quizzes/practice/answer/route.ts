@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sampleQuestions } from '@/data/sample-questions'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,20 +9,42 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { questionId, selectedAnswer } = body
 
-    const question = await prisma.question.findUnique({
-      where: { id: questionId },
-    })
+    // Try to find in database first
+    let correctAnswer: number | null = null
+    let explanation: string | null = null
 
-    if (!question) {
+    try {
+      const question = await prisma.question.findUnique({
+        where: { id: questionId },
+      })
+
+      if (question) {
+        correctAnswer = question.correctAnswer
+        explanation = question.explanationAr
+      }
+    } catch {
+      // Database not available
+    }
+
+    // Fallback to sample questions
+    if (correctAnswer === null) {
+      const sampleQuestion = sampleQuestions.find((q) => q.id === questionId)
+      if (sampleQuestion) {
+        correctAnswer = sampleQuestion.correctAnswer
+        explanation = sampleQuestion.explanationAr
+      }
+    }
+
+    if (correctAnswer === null) {
       return NextResponse.json({ error: 'السؤال غير موجود' }, { status: 404 })
     }
 
-    const isCorrect = question.correctAnswer === selectedAnswer
+    const isCorrect = correctAnswer === selectedAnswer
 
     return NextResponse.json({
       isCorrect,
-      correctAnswer: question.correctAnswer,
-      explanation: question.explanationAr,
+      correctAnswer,
+      explanation,
     })
   } catch (error) {
     console.error('Error checking answer:', error)

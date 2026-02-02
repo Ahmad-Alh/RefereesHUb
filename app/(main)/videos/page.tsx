@@ -1,18 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import {
   Play,
   Filter,
   Search,
   Loader2,
-  Video,
-  AlertTriangle,
-  BookOpen
+  Video
 } from 'lucide-react'
-import { toArabicNumerals } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
 interface VideoItem {
@@ -21,50 +17,34 @@ interface VideoItem {
   descriptionAr: string | null
   url: string
   thumbnailUrl: string | null
-  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
-  position: 'CENTER_REF' | 'ASSISTANT_REF' | 'FOURTH_OFFICIAL' | 'ALL'
-  isControversial: boolean
-  laws: { lawId: number }[]
+  category?: string
 }
 
-const difficultyLabels = {
-  BEGINNER: 'مبتدئ',
-  INTERMEDIATE: 'متوسط',
-  ADVANCED: 'متقدم',
-}
-
-const positionLabels = {
-  CENTER_REF: 'حكم الوسط',
-  ASSISTANT_REF: 'الحكم المساعد',
-  FOURTH_OFFICIAL: 'الحكم الرابع',
-  ALL: 'الجميع',
-}
+// Video categories
+const videoCategories = [
+  { id: 'OFFSIDE', label: 'حالات التسلل', icon: '🚩' },
+  { id: 'HANDBALL', label: 'حالات لمسة اليد', icon: '✋' },
+  { id: 'DOGSO', label: 'ايقاف فرصة محققة أو هجوم واعد', icon: '🎯' },
+  { id: 'PHYSICAL', label: 'التدخلات الجسدية', icon: '💪' },
+  { id: 'ADMINISTRATIVE', label: 'القرارات الادارية', icon: '📋' },
+]
 
 export default function VideosPage() {
-  const { status } = useSession()
   const router = useRouter()
   const [videos, setVideos] = useState<VideoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filters, setFilters] = useState({
-    difficulty: '',
-    position: '',
-    lawId: '',
-    controversial: false,
-  })
+  const [category, setCategory] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     fetchVideos()
-  }, [filters])
+  }, [category])
 
   const fetchVideos = async () => {
     try {
       const params = new URLSearchParams()
-      if (filters.difficulty) params.append('difficulty', filters.difficulty)
-      if (filters.position) params.append('position', filters.position)
-      if (filters.lawId) params.append('lawId', filters.lawId)
-      if (filters.controversial) params.append('controversial', 'true')
+      if (category) params.append('category', category)
 
       const response = await fetch(`/api/videos?${params.toString()}`)
       if (response.ok) {
@@ -86,7 +66,7 @@ export default function VideosPage() {
       )
     : videos
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
@@ -130,104 +110,40 @@ export default function VideosPage() {
 
         {/* Filter Options */}
         {showFilters && (
-          <div className="bg-white rounded-xl p-4 border border-gray-100 space-y-4">
-            {/* Difficulty */}
+          <div className="bg-white rounded-xl p-4 border border-gray-100">
+            {/* Category Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                المستوى
-              </label>
-              <div className="flex gap-2">
-                {(['', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const).map(
-                  (level) => (
-                    <button
-                      key={level}
-                      onClick={() =>
-                        setFilters((prev) => ({ ...prev, difficulty: level }))
-                      }
-                      className={cn(
-                        'px-3 py-1.5 text-sm rounded-full transition-colors',
-                        filters.difficulty === level
-                          ? 'bg-green-500 text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      )}
-                    >
-                      {level === '' ? 'الكل' : difficultyLabels[level]}
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
-
-            {/* Position */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                المنصب
+                التصنيف
               </label>
               <div className="flex flex-wrap gap-2">
-                {(
-                  ['', 'CENTER_REF', 'ASSISTANT_REF', 'FOURTH_OFFICIAL'] as const
-                ).map((pos) => (
+                <button
+                  onClick={() => setCategory('')}
+                  className={cn(
+                    'px-3 py-1.5 text-sm rounded-full transition-colors',
+                    category === ''
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  )}
+                >
+                  الكل
+                </button>
+                {videoCategories.map((cat) => (
                   <button
-                    key={pos}
-                    onClick={() =>
-                      setFilters((prev) => ({ ...prev, position: pos }))
-                    }
+                    key={cat.id}
+                    onClick={() => setCategory(cat.id)}
                     className={cn(
-                      'px-3 py-1.5 text-sm rounded-full transition-colors',
-                      filters.position === pos
+                      'px-3 py-1.5 text-sm rounded-full transition-colors flex items-center gap-1',
+                      category === cat.id
                         ? 'bg-green-500 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     )}
                   >
-                    {pos === '' ? 'الكل' : positionLabels[pos]}
+                    <span>{cat.icon}</span>
+                    {cat.label}
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Law Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                القانون
-              </label>
-              <select
-                value={filters.lawId}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, lawId: e.target.value }))
-                }
-                className="w-full p-2 border border-gray-200 rounded-lg text-sm"
-              >
-                <option value="">جميع القوانين</option>
-                {Array.from({ length: 17 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    القانون {toArabicNumerals(i + 1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Controversial Toggle */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700">قرارات مثيرة للجدل فقط</span>
-              <button
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    controversial: !prev.controversial,
-                  }))
-                }
-                className={cn(
-                  'relative w-12 h-6 rounded-full transition-colors',
-                  filters.controversial ? 'bg-green-500' : 'bg-gray-300'
-                )}
-              >
-                <span
-                  className={cn(
-                    'absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all',
-                    filters.controversial ? 'right-1' : 'right-7'
-                  )}
-                />
-              </button>
             </div>
           </div>
         )}
@@ -255,6 +171,11 @@ export default function VideosPage() {
 function VideoCard({ video }: { video: VideoItem }) {
   const router = useRouter()
 
+  const getCategoryLabel = (categoryId?: string) => {
+    const cat = videoCategories.find(c => c.id === categoryId)
+    return cat ? `${cat.icon} ${cat.label}` : null
+  }
+
   return (
     <div
       onClick={() => router.push(`/videos/${video.id}`)}
@@ -278,12 +199,6 @@ function VideoCard({ video }: { video: VideoItem }) {
             <Play className="w-6 h-6 text-green-600 mr-[-2px]" />
           </div>
         </div>
-        {video.isControversial && (
-          <span className="absolute top-2 right-2 flex items-center gap-1 text-xs bg-yellow-500 text-white px-2 py-1 rounded-full">
-            <AlertTriangle className="w-3 h-3" />
-            مثير للجدل
-          </span>
-        )}
       </div>
 
       {/* Info */}
@@ -296,23 +211,11 @@ function VideoCard({ video }: { video: VideoItem }) {
             {video.descriptionAr}
           </p>
         )}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-            {difficultyLabels[video.difficulty]}
+        {video.category && (
+          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+            {getCategoryLabel(video.category)}
           </span>
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-            {positionLabels[video.position]}
-          </span>
-          {video.laws.map((law) => (
-            <span
-              key={law.lawId}
-              className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1"
-            >
-              <BookOpen className="w-3 h-3" />
-              القانون {toArabicNumerals(law.lawId)}
-            </span>
-          ))}
-        </div>
+        )}
       </div>
     </div>
   )
