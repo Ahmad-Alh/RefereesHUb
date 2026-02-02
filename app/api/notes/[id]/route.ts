@@ -10,16 +10,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-    }
-
     const { id } = await params
 
     const note = await prisma.matchNote.findUnique({
-      where: { id, userId: session.user.id },
+      where: { id },
     })
 
     if (!note) {
@@ -41,23 +35,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-    }
-
     const { id } = await params
     const body = await req.json()
-
-    // Verify ownership
-    const existingNote = await prisma.matchNote.findUnique({
-      where: { id },
-    })
-
-    if (!existingNote || existingNote.userId !== session.user.id) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
-    }
 
     const note = await prisma.matchNote.update({
       where: { id },
@@ -86,22 +65,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
-    }
-
     const { id } = await params
-
-    // Verify ownership
-    const existingNote = await prisma.matchNote.findUnique({
-      where: { id },
-    })
-
-    if (!existingNote || existingNote.userId !== session.user.id) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
-    }
 
     await prisma.matchNote.delete({ where: { id } })
 

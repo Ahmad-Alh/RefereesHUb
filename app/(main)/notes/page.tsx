@@ -40,15 +40,8 @@ export default function NotesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login?callbackUrl=/notes')
-      return
-    }
-
-    if (status === 'authenticated') {
-      fetchNotes()
-    }
-  }, [status, router])
+    fetchNotes()
+  }, [filterEvaluator])
 
   const fetchNotes = async () => {
     try {
