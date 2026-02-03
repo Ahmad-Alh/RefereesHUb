@@ -61,7 +61,9 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session?.user || session.user.role !== 'ADMIN') {
+    if (!session?.user ||
+        (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') ||
+        session.user.adminStatus !== 'APPROVED') {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
     }
 

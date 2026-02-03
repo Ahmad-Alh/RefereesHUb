@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { getSession } from '@/lib/auth'
 import {
   BookOpen,
   Video,
@@ -7,26 +8,35 @@ import {
   Users,
   GraduationCap,
   TrendingUp,
-  Plus
+  Plus,
+  FileText,
+  UserCheck,
+  AlertCircle
 } from 'lucide-react'
 import { toArabicNumerals } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboard() {
+  const session = await getSession()
+  const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN'
+
   // Fetch statistics
   const [
     userCount,
     quizCount,
     questionCount,
     videoCount,
+    documentCount,
     practiceQuestionCount,
+    pendingAdminCount,
     recentAttempts
   ] = await Promise.all([
     prisma.user.count(),
     prisma.quiz.count({ where: { isPractice: false } }),
     prisma.question.count(),
     prisma.video.count(),
+    prisma.document.count(),
     prisma.question.count({
       where: {
         quizQuestions: {
@@ -34,6 +44,9 @@ export default async function AdminDashboard() {
         },
       },
     }),
+    isSuperAdmin ? prisma.user.count({
+      where: { role: 'ADMIN', adminStatus: 'PENDING' }
+    }) : Promise.resolve(0),
     prisma.quizAttempt.findMany({
       take: 5,
       orderBy: { startedAt: 'desc' },
@@ -46,8 +59,28 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Pending Admins Alert (SUPER_ADMIN only) */}
+      {isSuperAdmin && pendingAdminCount > 0 && (
+        <Link
+          href="/admin/users"
+          className="block bg-amber-50 border border-amber-200 rounded-xl p-4 hover:bg-amber-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="font-medium text-amber-800">
+                لديك {toArabicNumerals(pendingAdminCount)} طلب تسجيل مشرف جديد
+              </p>
+              <p className="text-sm text-amber-600">اضغط للموافقة أو الرفض</p>
+            </div>
+          </div>
+        </Link>
+      )}
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <StatCard
           icon={Users}
           label="المستخدمين"
@@ -72,6 +105,12 @@ export default async function AdminDashboard() {
           value={videoCount}
           color="orange"
         />
+        <StatCard
+          icon={FileText}
+          label="المستندات"
+          value={documentCount}
+          color="blue"
+        />
       </div>
 
       {/* Quick Actions */}
@@ -85,23 +124,25 @@ export default async function AdminDashboard() {
             color="green"
           />
           <QuickAction
-            href="/admin/quizzes/new"
-            icon={GraduationCap}
-            label="إنشاء اختبار"
-            color="blue"
-          />
-          <QuickAction
-            href="/admin/videos/new"
+            href="/admin/videos"
             icon={Video}
             label="رفع فيديو"
             color="purple"
           />
           <QuickAction
-            href="/admin/questions/generate"
-            icon={TrendingUp}
-            label="توليد أسئلة AI"
-            color="orange"
+            href="/admin/documents"
+            icon={FileText}
+            label="رفع مستند"
+            color="blue"
           />
+          {isSuperAdmin && (
+            <QuickAction
+              href="/admin/users"
+              icon={UserCheck}
+              label="إدارة المشرفين"
+              color="orange"
+            />
+          )}
         </div>
       </div>
 
@@ -138,16 +179,22 @@ export default async function AdminDashboard() {
           description="عرض وتعديل وحذف الأسئلة"
         />
         <AdminNavCard
+          href="/admin/videos"
+          icon={Video}
+          title="إدارة الفيديوهات"
+          description="رفع وتنظيم الفيديوهات"
+        />
+        <AdminNavCard
+          href="/admin/documents"
+          icon={FileText}
+          title="إدارة المستندات"
+          description="رفع وتنظيم الملفات"
+        />
+        <AdminNavCard
           href="/admin/quizzes"
           icon={GraduationCap}
           title="إدارة الاختبارات"
           description="إنشاء ونشر الاختبارات"
-        />
-        <AdminNavCard
-          href="/admin/videos"
-          icon={Video}
-          title="إدارة الفيديو"
-          description="رفع وتنظيم الفيديوهات"
         />
         <AdminNavCard
           href="/admin/analytics"
@@ -156,17 +203,20 @@ export default async function AdminDashboard() {
           description="عرض إحصائيات الاختبارات"
         />
         <AdminNavCard
-          href="/admin/users"
-          icon={Users}
-          title="إدارة المستخدمين"
-          description="عرض وإدارة الحكام"
-        />
-        <AdminNavCard
           href="/admin/laws"
           icon={BookOpen}
           title="إدارة القوانين"
           description="تحديث نصوص القوانين"
         />
+        {isSuperAdmin && (
+          <AdminNavCard
+            href="/admin/users"
+            icon={Users}
+            title="إدارة المشرفين"
+            description="الموافقة على طلبات المشرفين"
+            badge={pendingAdminCount > 0 ? pendingAdminCount : undefined}
+          />
+        )}
       </div>
 
       {/* Recent Activity */}
@@ -270,18 +320,25 @@ function AdminNavCard({
   icon: Icon,
   title,
   description,
+  badge,
 }: {
   href: string
   icon: React.ElementType
   title: string
   description: string
+  badge?: number
 }) {
   return (
     <Link
       href={href}
-      className="bg-white rounded-xl p-4 border border-gray-100 hover:border-green-200 hover:shadow-sm transition-all"
+      className="bg-white rounded-xl p-4 border border-gray-100 hover:border-amber-200 hover:shadow-sm transition-all relative"
     >
-      <Icon className="w-6 h-6 text-green-600 mb-3" />
+      {badge && (
+        <span className="absolute -top-2 -left-2 w-6 h-6 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+          {toArabicNumerals(badge)}
+        </span>
+      )}
+      <Icon className="w-6 h-6 text-amber-600 mb-3" />
       <h3 className="font-medium text-gray-900 mb-1">{title}</h3>
       <p className="text-sm text-gray-500">{description}</p>
     </Link>

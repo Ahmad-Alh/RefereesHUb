@@ -7,12 +7,14 @@ declare module 'next-auth' {
       id: string
       role: string
       refereeNumber: string
+      adminStatus: string | null
     } & DefaultSession['user']
   }
 
   interface User extends DefaultUser {
     role: string
     refereeNumber: string
+    adminStatus: string | null
   }
 }
 
@@ -21,5 +23,6 @@ declare module 'next-auth/jwt' {
     id: string
     role: string
     refereeNumber: string
+    adminStatus: string | null
   }
 }

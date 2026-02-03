@@ -17,25 +17,36 @@ datasource db {
 enum UserRole {
   REFEREE
   ADMIN
+  SUPER_ADMIN  // Owner - can approve other admins
+}
+
+enum AdminStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model User {
-  id            String    @id @default(cuid())
-  refereeNumber String    @unique @db.VarChar(4) // 1-4 digit referee number
+  id            String       @id @default(cuid())
+  refereeNumber String       @unique @db.VarChar(4) // 1-4 digit referee number
   name          String
-  email         String    @unique
-  password      String    // bcrypt hashed
-  role          UserRole  @default(REFEREE)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  email         String       @unique
+  password      String       // bcrypt hashed
+  role          UserRole     @default(REFEREE)
+  adminStatus   AdminStatus? // Only for ADMIN role - requires approval
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   // Relations
   quizAttempts  QuizAttempt[]
   matchNotes    MatchNote[]
   flashcardProgress FlashcardProgress[]
+  uploadedVideos Video[]     @relation("UploadedVideos")
+  uploadedDocuments Document[]
 
   @@index([email])
   @@index([refereeNumber])
+  @@index([adminStatus])
 }
 
 // ============================================
@@ -306,13 +317,15 @@ model Video {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  // Relations - many-to-many with laws
+  // Relations
   laws            VideoLaw[]
+  uploadedBy      User?           @relation("UploadedVideos", fields: [uploadedById], references: [id])
 
   @@index([difficulty])
   @@index([position])
   @@index([isControversial])
   @@index([isPublished])
+  @@index([uploadedById])
 }
 
 model VideoLaw {
@@ -373,4 +386,42 @@ model FlashcardProgress {
   @@unique([userId, questionId])
   @@index([userId])
   @@index([nextReview])
+}
+
+// ============================================
+// DOCUMENTS (المستندات)
+// ============================================
+
+enum DocumentCategory {
+  IFAB_LAWS           // قوانين اللعبة
+  TRAINING_MATERIALS  // مواد تدريبية
+  CIRCULARS           // تعميمات
+  FORMS               // نماذج
+  OTHER               // أخرى
+}
+
+model Document {
+  id            String           @id @default(cuid())
+  titleAr       String
+  titleEn       String?
+  descriptionAr String?          @db.Text
+  descriptionEn String?          @db.Text
+  fileUrl       String           // URL to uploaded file
+  fileName      String           // Original file name
+  fileSize      Int              // File size in bytes
+  fileType      String           // MIME type (application/pdf, etc.)
+  category      DocumentCategory @default(OTHER)
+  isPublished   Boolean          @default(true)
+  downloadCount Int              @default(0)
+  uploadedById  String
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Relations
+  uploadedBy    User             @relation(fields: [uploadedById], references: [id])
+
+  @@index([category])
+  @@index([isPublished])
+  @@index([uploadedById])
+  @@index([createdAt])
 }

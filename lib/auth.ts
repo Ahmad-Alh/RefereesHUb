@@ -36,6 +36,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           refereeNumber: user.refereeNumber,
+          adminStatus: user.adminStatus,
         }
       },
     }),
@@ -46,6 +47,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id
         token.role = user.role
         token.refereeNumber = user.refereeNumber
+        token.adminStatus = user.adminStatus
       }
       return token
     },
@@ -54,6 +56,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.role = token.role as string
         session.user.refereeNumber = token.refereeNumber as string
+        session.user.adminStatus = token.adminStatus as string | null
       }
       return session
     },
