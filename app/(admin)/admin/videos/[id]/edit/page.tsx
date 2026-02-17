@@ -30,13 +30,13 @@ export default function EditVideoPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-sm text-gray-500">
-        <Link href="/admin/videos" className="hover:text-gray-300 transition-colors">الفيديوهات</Link>
+      <div className="flex items-center gap-2 text-sm text-gray-600">
+        <Link href="/admin/videos" className="hover:text-gray-700 transition-colors">الفيديوهات</Link>
         <ChevronRight className="w-4 h-4" />
         <span className="text-gray-300 line-clamp-1">{video.titleAr}</span>
       </div>
 
-      <h1 className="text-xl font-bold text-white">تعديل الفيديو</h1>
+      <h1 className="text-xl font-bold text-gray-900">تعديل الفيديو</h1>
 
       <VideoForm initial={initial} videoId={video.id} />
     </div>

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, X, Plus } from 'lucide-react'
+import { Loader2, X, Plus, Upload } from 'lucide-react'
 
 interface VideoFormData {
   titleAr: string
@@ -28,7 +28,7 @@ const INITIAL: VideoFormData = {
   difficulty: 'BEGINNER',
   position: 'ALL',
   isControversial: false,
-  isPublished: false,
+  isPublished: true,
   tags: [],
 }
 
@@ -58,6 +58,8 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
   const [tagInput, setTagInput] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const set = (key: keyof VideoFormData, value: unknown) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -85,20 +87,37 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.titleAr.trim()) { setError('العنوان مطلوب'); return }
-    if (!form.url.trim()) { setError('رابط الفيديو مطلوب'); return }
+    if (!form.titleAr.trim()) {
+      setError('العنوان مطلوب')
+      return
+    }
+    if (!videoFile && !form.url.trim()) {
+      setError('ارفع ملف فيديو أو أضف رابط فيديو')
+      return
+    }
+
     setError('')
     setSaving(true)
 
     try {
-      const url = videoId ? `/api/admin/videos/${videoId}` : '/api/admin/videos'
+      const endpoint = videoId ? `/api/admin/videos/${videoId}` : '/api/admin/videos'
       const method = videoId ? 'PUT' : 'POST'
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
+      const payload = new FormData()
+      payload.append('titleAr', form.titleAr)
+      payload.append('titleEn', form.titleEn)
+      payload.append('descriptionAr', form.descriptionAr)
+      payload.append('url', form.url)
+      payload.append('thumbnailUrl', form.thumbnailUrl)
+      payload.append('difficulty', form.difficulty)
+      payload.append('position', form.position)
+      payload.append('isControversial', String(form.isControversial))
+      payload.append('isPublished', String(form.isPublished))
+      payload.append('tags', JSON.stringify(form.tags))
+      payload.append('lawIds', JSON.stringify(form.lawIds))
+      if (videoFile) payload.append('file', videoFile)
+
+      const res = await fetch(endpoint, { method, body: payload })
 
       if (!res.ok) {
         const data = await res.json()
@@ -117,17 +136,10 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-      {error && (
-        <div className="p-3 bg-red-950 border border-red-800 rounded-lg text-red-400 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">{error}</div>}
 
-      {/* Title */}
-      <div className="space-y-4">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-800 pb-2">
-          معلومات الفيديو
-        </h2>
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-700">معلومات الفيديو</h2>
 
         <Field label="العنوان بالعربية *">
           <input
@@ -161,13 +173,23 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
         </Field>
       </div>
 
-      {/* URL */}
-      <div className="space-y-4">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-800 pb-2">
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <Upload className="w-4 h-4 text-green-600" />
           مصدر الفيديو
         </h2>
 
-        <Field label="رابط الفيديو (YouTube / Vimeo / URL مباشر) *">
+        <Field label="رفع ملف فيديو (مثل قسم PDF)">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="video/*"
+            onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
+            className="w-full bg-white text-gray-700 px-4 py-2.5 rounded-lg border border-gray-300 cursor-pointer file:ml-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-green-600 file:text-white file:text-sm file:cursor-pointer"
+          />
+        </Field>
+
+        <Field label="أو رابط فيديو (اختياري)">
           <input
             type="url"
             value={form.url}
@@ -175,7 +197,6 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
             className={inputClass}
             placeholder="https://www.youtube.com/watch?v=..."
             dir="ltr"
-            required
           />
         </Field>
 
@@ -191,11 +212,8 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
         </Field>
       </div>
 
-      {/* Laws */}
-      <div className="space-y-3">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-800 pb-2">
-          القوانين المرتبطة (1-17)
-        </h2>
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-gray-700">القوانين المرتبطة (1-17)</h2>
         <div className="flex flex-wrap gap-2">
           {Array.from({ length: 17 }, (_, i) => i + 1).map((n) => (
             <button
@@ -205,7 +223,7 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
               className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
                 form.lawIds.includes(n)
                   ? 'bg-green-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               {n}
@@ -214,13 +232,9 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
         </div>
       </div>
 
-      {/* Tags */}
-      <div className="space-y-3">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-800 pb-2">
-          التصنيفات والوسوم
-        </h2>
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-gray-700">التصنيفات والوسوم</h2>
 
-        {/* Preset tags */}
         <div className="flex flex-wrap gap-2">
           {PRESET_TAGS.map((tag) => (
             <button
@@ -230,7 +244,7 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
               className={`px-2.5 py-1 text-xs rounded-full transition-colors ${
                 form.tags.includes(tag)
                   ? 'bg-green-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               {tag}
@@ -238,14 +252,16 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
           ))}
         </div>
 
-        {/* Custom tag input */}
         <div className="flex gap-2">
           <input
             type="text"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') { e.preventDefault(); addTag(tagInput) }
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                addTag(tagInput)
+              }
             }}
             className={`${inputClass} flex-1`}
             placeholder="وسم مخصص..."
@@ -254,19 +270,18 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
           <button
             type="button"
             onClick={() => addTag(tagInput)}
-            className="px-3 py-2 bg-gray-800 text-gray-400 rounded-lg hover:bg-gray-700 transition-colors"
+            className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
           >
             <Plus className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Active tags */}
         {form.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {form.tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-950 text-green-400 text-xs rounded-full"
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full"
               >
                 {tag}
                 <button type="button" onClick={() => removeTag(tag)}>
@@ -278,11 +293,8 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
         )}
       </div>
 
-      {/* Metadata */}
-      <div className="space-y-4">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide border-b border-gray-800 pb-2">
-          الإعدادات
-        </h2>
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-gray-700">الإعدادات</h2>
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="مستوى الصعوبة">
@@ -318,7 +330,7 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
               onChange={(e) => set('isControversial', e.target.checked)}
               className="w-4 h-4 accent-green-500"
             />
-            <span className="text-sm text-gray-300">موقف خلافي</span>
+            <span className="text-sm text-gray-700">موقف خلافي</span>
           </label>
 
           <label className="flex items-center gap-3 cursor-pointer">
@@ -328,12 +340,11 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
               onChange={(e) => set('isPublished', e.target.checked)}
               className="w-4 h-4 accent-green-500"
             />
-            <span className="text-sm text-gray-300">نشر الفيديو (ظاهر للجمهور)</span>
+            <span className="text-sm text-gray-700">نشر الفيديو (ظاهر للجمهور)</span>
           </label>
         </div>
       </div>
 
-      {/* Submit */}
       <div className="flex items-center gap-3 pt-2">
         <button
           type="submit"
@@ -346,7 +357,7 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
         <button
           type="button"
           onClick={() => router.push('/admin/videos')}
-          className="px-6 py-2.5 text-sm text-gray-400 hover:text-white transition-colors"
+          className="px-6 py-2.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
         >
           إلغاء
         </button>
@@ -358,11 +369,11 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm text-gray-400 mb-1.5">{label}</label>
+      <label className="block text-sm text-gray-600 mb-1.5">{label}</label>
       {children}
     </div>
   )
 }
 
 const inputClass =
-  'w-full bg-gray-800 border border-gray-700 text-white px-3 py-2.5 rounded-lg text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-600'
+  'w-full bg-white border border-gray-300 text-gray-900 px-3 py-2.5 rounded-lg text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-600'

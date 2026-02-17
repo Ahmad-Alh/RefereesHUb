@@ -20,20 +20,35 @@ export const authOptions: NextAuthOptions = {
           throw new Error('البريد الإلكتروني وكلمة المرور مطلوبان')
         }
 
-        const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@refereeshub.com'
-        const adminPassword = process.env.ADMIN_PASSWORD ?? 'Admin@2025!'
+        const admins = [
+          {
+            id: 'admin',
+            email: process.env.ADMIN_EMAIL ?? 'admin@refereeshub.com',
+            password: process.env.ADMIN_PASSWORD ?? 'Admin@2025!',
+            name: process.env.ADMIN_NAME ?? 'Admin',
+          },
+          {
+            id: 'admin1',
+            email: process.env.ADMIN1_EMAIL ?? 'admin1',
+            password: process.env.ADMIN1_PASSWORD ?? 'Admin@2025!',
+            name: process.env.ADMIN1_NAME ?? 'Admin 1',
+          },
+        ]
 
-        if (
-          credentials.email.toLowerCase() !== adminEmail.toLowerCase() ||
-          credentials.password !== adminPassword
-        ) {
+        const matchedAdmin = admins.find(
+          (admin) =>
+            credentials.email.toLowerCase() === admin.email.toLowerCase() &&
+            credentials.password === admin.password
+        )
+
+        if (!matchedAdmin) {
           throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة')
         }
 
         return {
-          id: 'admin',
-          email: adminEmail,
-          name: process.env.ADMIN_NAME ?? 'Admin',
+          id: matchedAdmin.id,
+          email: matchedAdmin.email,
+          name: matchedAdmin.name,
           role: 'ADMIN',
           refereeNumber: '0000',
         }
@@ -66,7 +81,7 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET ?? 'refereeshub-mock-secret',
 }
 
 export const getSession = () => getServerSession(authOptions)

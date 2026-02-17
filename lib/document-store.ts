@@ -1,6 +1,3 @@
-import fs from 'fs'
-import path from 'path'
-
 export interface Document {
   id: string
   titleAr: string
@@ -8,39 +5,35 @@ export interface Document {
   fileUrl: string
   fileSize: number
   uploadedAt: string
+  mediaId?: string
 }
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'documents.json')
+declare global {
+  // eslint-disable-next-line no-var
+  var __documentStore: Map<string, Document> | undefined
+}
 
-function readDocuments(): Document[] {
-  try {
-    if (!fs.existsSync(DATA_FILE)) return []
-    const data = fs.readFileSync(DATA_FILE, 'utf-8')
-    return JSON.parse(data)
-  } catch {
-    return []
+function getStore(): Map<string, Document> {
+  if (!global.__documentStore) {
+    global.__documentStore = new Map()
   }
-}
-
-function writeDocuments(docs: Document[]): void {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(docs, null, 2), 'utf-8')
+  return global.__documentStore
 }
 
 export function getDocuments(): Document[] {
-  return readDocuments()
+  return Array.from(getStore().values()).sort(
+    (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+  )
 }
 
 export function addDocument(doc: Document): void {
-  const docs = readDocuments()
-  docs.push(doc)
-  writeDocuments(docs)
+  getStore().set(doc.id, doc)
 }
 
 export function deleteDocument(id: string): Document | null {
-  const docs = readDocuments()
-  const index = docs.findIndex((d) => d.id === id)
-  if (index === -1) return null
-  const [deleted] = docs.splice(index, 1)
-  writeDocuments(docs)
-  return deleted
+  const store = getStore()
+  const found = store.get(id)
+  if (!found) return null
+  store.delete(id)
+  return found
 }

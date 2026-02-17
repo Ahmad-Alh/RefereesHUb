@@ -1,34 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { getDocuments, addDocument } from '@/lib/document-store'
-import fs from 'fs'
-import path from 'path'
+import { addMediaFile } from '@/lib/media-store'
 
 export const dynamic = 'force-dynamic'
 
-const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'documents')
-
-function forbidden() {
-  return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
-}
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user || session.user.role !== 'ADMIN') return null
-  return session
-}
-
 // GET /api/admin/documents — list all documents
 export async function GET() {
-  if (!(await requireAdmin())) return forbidden()
   return NextResponse.json(getDocuments())
 }
 
 // POST /api/admin/documents — upload PDF
 export async function POST(req: NextRequest) {
-  if (!(await requireAdmin())) return forbidden()
-
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File | null
@@ -42,25 +24,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'يُسمح بملفات PDF فقط' }, { status: 400 })
     }
 
-    if (!fs.existsSync(UPLOADS_DIR)) {
-      fs.mkdirSync(UPLOADS_DIR, { recursive: true })
-    }
-
-    const id = Date.now().toString()
-    const safeName = file.name.replace(/[^a-zA-Z0-9.\u0600-\u06FF_-]/g, '_')
-    const fileName = `${id}-${safeName}`
-    const filePath = path.join(UPLOADS_DIR, fileName)
-
     const bytes = await file.arrayBuffer()
-    fs.writeFileSync(filePath, Buffer.from(bytes))
+    const buffer = Buffer.from(bytes)
+
+    const media = addMediaFile({
+      fileName: file.name,
+      mimeType: file.type || 'application/pdf',
+      buffer,
+    })
 
     const doc = {
-      id,
+      id: `d-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       titleAr,
       fileName: file.name,
-      fileUrl: `/uploads/documents/${fileName}`,
+      fileUrl: `/api/media/${media.id}`,
       fileSize: file.size,
       uploadedAt: new Date().toISOString(),
+      mediaId: media.id,
     }
 
     addDocument(doc)
