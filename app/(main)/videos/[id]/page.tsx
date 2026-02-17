@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { ChevronRight, Loader2, BookOpen, AlertTriangle } from 'lucide-react'
 import ReactPlayer from 'react-player'
@@ -39,7 +38,6 @@ interface PageProps {
 
 export default function VideoDetailPage({ params }: PageProps) {
   const { id } = use(params)
-  const { status } = useSession()
   const router = useRouter()
   const [video, setVideo] = useState<VideoDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -65,7 +63,7 @@ export default function VideoDetailPage({ params }: PageProps) {
     }
   }
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 text-green-600 animate-spin" />

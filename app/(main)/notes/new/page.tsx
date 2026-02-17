@@ -1,13 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { ChevronRight, Calendar, Clock, Loader2, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function NewNotePage() {
-  const { status } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

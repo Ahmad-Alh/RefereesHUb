@@ -119,10 +119,10 @@ function LoginForm() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              ليس لديك حساب؟{' '}
-              <Link href="/register" className="text-green-600 font-medium hover:underline">
-                إنشاء حساب جديد
+            <p className="text-gray-500 text-sm">
+              هل أنت مسؤول؟{' '}
+              <Link href="/admin" className="text-green-600 font-medium hover:underline">
+                الدخول للوحة التحكم
               </Link>
             </p>
           </div>
