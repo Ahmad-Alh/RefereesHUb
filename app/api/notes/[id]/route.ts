@@ -1,80 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-
-    const note = await prisma.matchNote.findUnique({
-      where: { id },
-    })
-
-    if (!note) {
-      return NextResponse.json({ error: 'الملاحظة غير موجودة' }, { status: 404 })
-    }
-
-    return NextResponse.json({ note })
-  } catch (error) {
-    console.error('Error fetching note:', error)
-    return NextResponse.json(
-      { error: 'فشل في جلب الملاحظة' },
-      { status: 500 }
-    )
-  }
+// Notes are not available in demo/mockup mode (no DB).
+export async function GET() {
+  return NextResponse.json({ error: 'غير متاح' }, { status: 404 })
 }
-
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-    const body = await req.json()
-
-    const note = await prisma.matchNote.update({
-      where: { id },
-      data: {
-        matchDate: body.matchDate ? new Date(body.matchDate) : undefined,
-        matchTime: body.matchTime,
-        matchName: body.matchName,
-        hasEvaluator: body.hasEvaluator,
-        evaluatorFeedback: body.hasEvaluator ? body.evaluatorFeedback : null,
-        personalNotes: body.personalNotes,
-      },
-    })
-
-    return NextResponse.json({ note })
-  } catch (error) {
-    console.error('Error updating note:', error)
-    return NextResponse.json(
-      { error: 'فشل في تحديث الملاحظة' },
-      { status: 500 }
-    )
-  }
+export async function PUT() {
+  return NextResponse.json({ error: 'غير متاح' }, { status: 403 })
 }
-
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params
-
-    await prisma.matchNote.delete({ where: { id } })
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error deleting note:', error)
-    return NextResponse.json(
-      { error: 'فشل في حذف الملاحظة' },
-      { status: 500 }
-    )
-  }
+export async function DELETE() {
+  return NextResponse.json({ error: 'غير متاح' }, { status: 403 })
 }
