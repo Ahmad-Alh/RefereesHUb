@@ -4,12 +4,10 @@ import { addMediaFile } from '@/lib/media-store'
 
 export const dynamic = 'force-dynamic'
 
-// GET /api/admin/documents — list all documents
 export async function GET() {
   return NextResponse.json(getDocuments())
 }
 
-// POST /api/admin/documents — upload PDF
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
@@ -20,16 +18,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'العنوان والملف مطلوبان' }, { status: 400 })
     }
 
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
+    const lowerName = file.name.toLowerCase()
+    const type = file.type || 'application/pdf'
+    if (!lowerName.endsWith('.pdf') && type !== 'application/pdf') {
       return NextResponse.json({ error: 'يُسمح بملفات PDF فقط' }, { status: 400 })
     }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
+    const buffer = Buffer.from(await file.arrayBuffer())
     const media = addMediaFile({
       fileName: file.name,
-      mimeType: file.type || 'application/pdf',
+      mimeType: type,
       buffer,
     })
 

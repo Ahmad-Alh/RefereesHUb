@@ -4,7 +4,6 @@ import { deleteMediaFile } from '@/lib/media-store'
 
 export const dynamic = 'force-dynamic'
 
-// DELETE /api/admin/documents/[id]
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }

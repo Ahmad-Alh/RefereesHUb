@@ -4,12 +4,20 @@ import { addMediaFile } from '@/lib/media-store'
 
 export const dynamic = 'force-dynamic'
 
-// GET /api/admin/videos — list ALL videos (published + draft)
+function parseArray(value: string | null): unknown[] {
+  if (!value) return []
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export async function GET() {
   return NextResponse.json({ videos: getAllVideos() })
 }
 
-// POST /api/admin/videos — create video
 export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || ''
@@ -38,18 +46,15 @@ export async function POST(req: NextRequest) {
       isControversial = (formData.get('isControversial') as string | null) === 'true'
       isPublished = (formData.get('isPublished') as string | null) !== 'false'
 
-      const tagsRaw = (formData.get('tags') as string | null) || '[]'
-      const lawIdsRaw = (formData.get('lawIds') as string | null) || '[]'
-      tags = JSON.parse(tagsRaw)
-      lawIds = JSON.parse(lawIdsRaw)
+      tags = parseArray(formData.get('tags') as string | null) as string[]
+      lawIds = parseArray(formData.get('lawIds') as string | null).map(Number)
 
       const file = formData.get('file') as File | null
       if (file && file.size > 0) {
-        const bytes = await file.arrayBuffer()
         const media = addMediaFile({
           fileName: file.name,
           mimeType: file.type || 'video/mp4',
-          buffer: Buffer.from(bytes),
+          buffer: Buffer.from(await file.arrayBuffer()),
         })
         url = `/api/media/${media.id}`
       }
@@ -64,16 +69,12 @@ export async function POST(req: NextRequest) {
       position = body.position || 'ALL'
       isControversial = body.isControversial ?? false
       isPublished = body.isPublished ?? true
-      tags = body.tags ?? []
-      lawIds = body.lawIds ?? []
+      tags = Array.isArray(body.tags) ? body.tags : []
+      lawIds = Array.isArray(body.lawIds) ? body.lawIds.map(Number) : []
     }
 
-    if (!titleAr) {
-      return NextResponse.json({ error: 'العنوان مطلوب' }, { status: 400 })
-    }
-    if (!url) {
-      return NextResponse.json({ error: 'ارفع ملف فيديو أو أضف رابط فيديو' }, { status: 400 })
-    }
+    if (!titleAr) return NextResponse.json({ error: 'العنوان مطلوب' }, { status: 400 })
+    if (!url) return NextResponse.json({ error: 'ارفع ملف فيديو أو أضف رابط فيديو' }, { status: 400 })
 
     const video = createVideo({
       titleAr,
@@ -85,8 +86,8 @@ export async function POST(req: NextRequest) {
       position,
       isControversial,
       isPublished,
-      tags: Array.isArray(tags) ? tags : [],
-      laws: (Array.isArray(lawIds) ? lawIds : []).map((lawId) => ({ lawId: Number(lawId) })),
+      tags,
+      laws: lawIds.map((lawId) => ({ lawId })),
     })
 
     return NextResponse.json({ video }, { status: 201 })
