@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import {
   ChevronRight,
@@ -36,7 +35,6 @@ interface PracticeSession {
 const QUESTIONS_PER_SESSION = 10
 
 export default function PracticePage() {
-  const { status } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [session, setSession] = useState<PracticeSession | null>(null)
@@ -124,7 +122,7 @@ export default function PracticePage() {
     setCorrectAnswer(null)
   }
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 text-green-600 animate-spin" />

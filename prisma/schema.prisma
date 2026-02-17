@@ -301,7 +301,8 @@ model Video {
   difficulty      DifficultyLevel @default(BEGINNER)
   position        RefereePosition @default(ALL)
   isControversial Boolean         @default(false)
-  isPublished     Boolean         @default(true)
+  isPublished     Boolean         @default(false)
+  tags            String[]        @default([])
   uploadedById    String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt

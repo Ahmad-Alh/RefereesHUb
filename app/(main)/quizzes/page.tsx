@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import {
   GraduationCap,
   BookOpen,
@@ -29,8 +27,6 @@ interface Quiz {
 }
 
 export default function QuizzesPage() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
   const [quizzes, setQuizzes] = useState<Quiz[]>([])
   const [loading, setLoading] = useState(true)
   const [practiceCount, setPracticeCount] = useState(0)
@@ -66,7 +62,7 @@ export default function QuizzesPage() {
     }
   }
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
