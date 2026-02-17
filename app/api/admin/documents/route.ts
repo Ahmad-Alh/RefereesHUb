@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDocuments, addDocument } from '@/lib/document-store'
-import fs from 'fs'
-import path from 'path'
+import { addMediaFile } from '@/lib/media-store'
 
 export const dynamic = 'force-dynamic'
-
-const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'documents')
-
 
 // GET /api/admin/documents — list all documents
 export async function GET() {
@@ -15,7 +11,6 @@ export async function GET() {
 
 // POST /api/admin/documents — upload PDF
 export async function POST(req: NextRequest) {
-
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File | null
@@ -25,29 +20,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'العنوان والملف مطلوبان' }, { status: 400 })
     }
 
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
+    const mimeType = file.type || ''
+    const isPdfByMime = mimeType === 'application/pdf'
+    const isPdfByExt = file.name.toLowerCase().endsWith('.pdf')
+
+    if (!isPdfByMime && !isPdfByExt) {
       return NextResponse.json({ error: 'يُسمح بملفات PDF فقط' }, { status: 400 })
     }
 
-    if (!fs.existsSync(UPLOADS_DIR)) {
-      fs.mkdirSync(UPLOADS_DIR, { recursive: true })
-    }
-
+    const media = await addMediaFile(file)
     const id = Date.now().toString()
-    const safeName = file.name.replace(/[^a-zA-Z0-9.\u0600-\u06FF_-]/g, '_')
-    const fileName = `${id}-${safeName}`
-    const filePath = path.join(UPLOADS_DIR, fileName)
-
-    const bytes = await file.arrayBuffer()
-    fs.writeFileSync(filePath, Buffer.from(bytes))
 
     const doc = {
       id,
       titleAr,
       fileName: file.name,
-      fileUrl: `/uploads/documents/${fileName}`,
+      fileUrl: `/api/media/${media.id}`,
       fileSize: file.size,
       uploadedAt: new Date().toISOString(),
+      mediaId: media.id,
     }
 
     addDocument(doc)

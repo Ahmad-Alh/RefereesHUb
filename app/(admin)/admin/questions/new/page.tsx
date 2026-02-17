@@ -154,7 +154,7 @@ export default function NewQuestionPage() {
           <CheckCircle className="w-8 h-8 text-green-600" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">تم إنشاء السؤال بنجاح</h2>
-        <p className="text-gray-500">جاري تحويلك لقائمة الأسئلة...</p>
+        <p className="text-gray-600">جاري تحويلك لقائمة الأسئلة...</p>
       </div>
     )
   }
@@ -165,7 +165,7 @@ export default function NewQuestionPage() {
       <div className="mb-6">
         <button
           onClick={() => router.push('/admin/questions')}
-          className="flex items-center gap-1 text-gray-500 hover:text-gray-700 mb-4"
+          className="flex items-center gap-1 text-gray-600 hover:text-gray-700 mb-4"
         >
           <ChevronRight className="w-5 h-5" />
           <span>العودة</span>
@@ -311,7 +311,7 @@ export default function NewQuestionPage() {
                 </button>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-600 mt-2">
               اضغط على الحرف لتحديد الإجابة الصحيحة
             </p>
           </div>
@@ -467,7 +467,7 @@ export default function NewQuestionPage() {
         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
           <div>
             <span className="font-medium text-gray-700">إضافة لبنك التدريب</span>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-600">
               سيظهر السؤال في وضع التدريب الشخصي
             </p>
           </div>

@@ -102,7 +102,7 @@ export default function QuestionsListPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">إدارة الأسئلة</h1>
-          <p className="text-gray-500">
+          <p className="text-gray-600">
             {toArabicNumerals(questions.length)} سؤال
           </p>
         </div>
@@ -127,7 +127,7 @@ export default function QuestionsListPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-4 py-2 pr-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
             </div>
           </div>
           <select
@@ -166,8 +166,8 @@ export default function QuestionsListPage() {
       {/* Questions List */}
       {filteredQuestions.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
-          <FileQuestion className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">لا توجد أسئلة</p>
+          <FileQuestion className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-600">لا توجد أسئلة</p>
           <Link
             href="/admin/questions/new"
             className="inline-block mt-4 text-green-600 font-medium"
@@ -180,19 +180,19 @@ export default function QuestionsListPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th className="text-right px-4 py-3 text-sm font-medium text-gray-500">
+                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">
                   السؤال
                 </th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-gray-500 w-24">
+                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600 w-24">
                   النوع
                 </th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-gray-500 w-24">
+                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600 w-24">
                   القانون
                 </th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-gray-500 w-24">
+                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600 w-24">
                   الإجابات
                 </th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-gray-500 w-24">
+                <th className="text-right px-4 py-3 text-sm font-medium text-gray-600 w-24">
                   إجراءات
                 </th>
               </tr>
@@ -217,7 +217,7 @@ export default function QuestionsListPage() {
                         {toArabicNumerals(question.lawId)}
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-400">-</span>
+                      <span className="text-xs text-gray-600">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -229,13 +229,13 @@ export default function QuestionsListPage() {
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/admin/questions/${question.id}/edit`}
-                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                        className="p-1.5 text-gray-600 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
                       >
                         <Edit className="w-4 h-4" />
                       </Link>
                       <button
                         onClick={() => handleDelete(question.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
