@@ -28,7 +28,7 @@ const INITIAL: VideoFormData = {
   difficulty: 'BEGINNER',
   position: 'ALL',
   isControversial: false,
-  isPublished: false,
+  isPublished: true,
   tags: [],
 }
 
