@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, GraduationCap, Video, FileText, Search } from 'lucide-react'
+import { GraduationCap, Video, FileText, Search, FolderOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
   {
-    href: '/',
-    label: 'القوانين',
-    icon: BookOpen,
+    href: '/documents',
+    label: 'المستندات',
+    icon: FolderOpen,
   },
   {
     href: '/quizzes',
