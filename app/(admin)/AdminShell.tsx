@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Menu,
   X,
+  FolderOpen,
 } from 'lucide-react'
 
 // ─────────────────────────────────────────────
@@ -137,6 +138,7 @@ function AdminLoginForm() {
 // Admin Sidebar Navigation
 // ─────────────────────────────────────────────
 const navItems = [
+  { href: '/admin/documents', label: 'المستندات', icon: FolderOpen },
   { href: '/admin/videos', label: 'الفيديوهات', icon: Video },
   { href: '/admin/questions', label: 'الأسئلة', icon: FileQuestion },
   { href: '/admin/analytics', label: 'التحليلات', icon: BarChart2 },
