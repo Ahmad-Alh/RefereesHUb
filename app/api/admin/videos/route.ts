@@ -1,30 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { getAllVideos, createVideo } from '@/lib/video-store'
 
 export const dynamic = 'force-dynamic'
 
-function forbidden() {
-  return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
-}
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user || session.user.role !== 'ADMIN') return null
-  return session
-}
 
 // GET /api/admin/videos — list ALL videos (published + draft)
 export async function GET() {
-  if (!(await requireAdmin())) return forbidden()
   return NextResponse.json({ videos: getAllVideos() })
 }
 
 // POST /api/admin/videos — create video
 export async function POST(req: NextRequest) {
-  const session = await requireAdmin()
-  if (!session) return forbidden()
 
   try {
     const body = await req.json()

@@ -1,6 +1,5 @@
 'use client'
 
-import { SessionProvider as NextAuthSessionProvider } from 'next-auth/react'
 import { ReactNode } from 'react'
 
 interface Props {
@@ -8,5 +7,6 @@ interface Props {
 }
 
 export function SessionProvider({ children }: Props) {
-  return <NextAuthSessionProvider>{children}</NextAuthSessionProvider>
+  // Mockup mode: disable NextAuth session polling to avoid /api/auth calls.
+  return <>{children}</>
 }
