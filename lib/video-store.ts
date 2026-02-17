@@ -127,7 +127,7 @@ function getStore(): Map<string, VideoItem> {
 }
 
 export function getAllVideos(): VideoItem[] {
-  return [...getStore().values()].sort(
+  return Array.from(getStore().values()).sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   )
 }
