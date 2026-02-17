@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       difficulty: body.difficulty || 'BEGINNER',
       position: body.position || 'ALL',
       isControversial: body.isControversial ?? false,
-      isPublished: body.isPublished ?? false,
+      isPublished: body.isPublished ?? true,
       tags: body.tags ?? [],
       laws: (body.lawIds as number[] | undefined)?.map((lawId) => ({ lawId })) ?? [],
     })

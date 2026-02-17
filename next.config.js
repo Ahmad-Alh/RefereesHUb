@@ -13,6 +13,18 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  async rewrites() {
+    return [
+      {
+        source: '/admin1',
+        destination: '/admin',
+      },
+      {
+        source: '/admin1/:path*',
+        destination: '/admin/:path*',
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
