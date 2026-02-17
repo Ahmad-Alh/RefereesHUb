@@ -1,15 +1,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // In-memory video store for demo/mockup mode (no database required).
-// Pre-loaded with sample football officiating videos.
+// Starts empty — admin adds videos via the dashboard.
 // Admin additions persist for the lifetime of the server process.
-// On cold-start / redeploy → resets to SAMPLE_VIDEOS (fine for demo).
+// On cold-start / redeploy → resets to empty (fine for demo).
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface VideoItem {
   id: string
   titleAr: string
   titleEn: string | null
-  descriptionAr: string | null
+  descriptionAr: string | null   // optional — admin may leave blank
   url: string
   thumbnailUrl: string | null
   difficulty: string
@@ -22,93 +22,8 @@ export interface VideoItem {
   updatedAt: string
 }
 
-const SAMPLE_VIDEOS: VideoItem[] = [
-  {
-    id: 'demo-v1',
-    titleAr: 'قانون التسلل - فهم مواقف التسلل',
-    titleEn: 'Offside Law - Understanding Offside Situations',
-    descriptionAr:
-      'شرح تفصيلي لقانون ١١ (التسلل) مع أمثلة واضحة من المباريات الرسمية. يشمل التسلل النشط والتسلل غير المؤثر.',
-    url: 'https://www.youtube.com/watch?v=VMYFuq0JgOU',
-    thumbnailUrl: 'https://img.youtube.com/vi/VMYFuq0JgOU/hqdefault.jpg',
-    difficulty: 'BEGINNER',
-    position: 'ALL',
-    isControversial: false,
-    isPublished: true,
-    tags: ['offside'],
-    laws: [{ lawId: 11 }],
-    createdAt: new Date('2025-01-10').toISOString(),
-    updatedAt: new Date('2025-01-10').toISOString(),
-  },
-  {
-    id: 'demo-v2',
-    titleAr: 'لمسة اليد - تطبيق قانون ١٢',
-    titleEn: 'Handball - Applying Law 12',
-    descriptionAr:
-      'توضيح لموقف لمسة اليد القصدية وغير القصدية وفق قوانين الفيفا 2025/26. يشمل الذراع والكتف والإيماءة الطبيعية.',
-    url: 'https://www.youtube.com/watch?v=4fHBbWMfuTI',
-    thumbnailUrl: 'https://img.youtube.com/vi/4fHBbWMfuTI/hqdefault.jpg',
-    difficulty: 'INTERMEDIATE',
-    position: 'CENTER_REF',
-    isControversial: true,
-    isPublished: true,
-    tags: ['handball'],
-    laws: [{ lawId: 12 }],
-    createdAt: new Date('2025-01-12').toISOString(),
-    updatedAt: new Date('2025-01-12').toISOString(),
-  },
-  {
-    id: 'demo-v3',
-    titleAr: 'إيقاف فرصة محققة - DOGSO',
-    titleEn: 'Denying Obvious Goal-Scoring Opportunity',
-    descriptionAr:
-      'شرح معايير DOGSO الأربعة: المسافة من المرمى، اتجاه الهجوم، موقع المدافعين، السيطرة على الكرة. متى يكون الطرد واجباً؟',
-    url: 'https://www.youtube.com/watch?v=OAoMOmat24c',
-    thumbnailUrl: 'https://img.youtube.com/vi/OAoMOmat24c/hqdefault.jpg',
-    difficulty: 'ADVANCED',
-    position: 'CENTER_REF',
-    isControversial: false,
-    isPublished: true,
-    tags: ['DOGSO'],
-    laws: [{ lawId: 12 }],
-    createdAt: new Date('2025-01-15').toISOString(),
-    updatedAt: new Date('2025-01-15').toISOString(),
-  },
-  {
-    id: 'demo-v4',
-    titleAr: 'الحكم المساعد - تحركات خط التسلل',
-    titleEn: 'Assistant Referee - Offside Line Movements',
-    descriptionAr:
-      'تدريب للحكام المساعدين على تحركات خط التسلل، الإشارة الصحيحة، والتنسيق مع الحكم الرئيسي.',
-    url: 'https://www.youtube.com/watch?v=kqwB_3s7tLU',
-    thumbnailUrl: 'https://img.youtube.com/vi/kqwB_3s7tLU/hqdefault.jpg',
-    difficulty: 'INTERMEDIATE',
-    position: 'ASSISTANT_REF',
-    isControversial: false,
-    isPublished: true,
-    tags: ['AR', 'offside'],
-    laws: [{ lawId: 6 }, { lawId: 11 }],
-    createdAt: new Date('2025-01-18').toISOString(),
-    updatedAt: new Date('2025-01-18').toISOString(),
-  },
-  {
-    id: 'demo-v5',
-    titleAr: 'قانون ١٢ - التدخلات الجسدية والمخالفات',
-    titleEn: 'Law 12 - Fouls and Misconduct',
-    descriptionAr:
-      'مراجعة شاملة لأنواع المخالفات الجسدية: التدخل من الخلف، العرقلة، الإمساك، الدفع. درجة الخطورة والعقوبة المناسبة.',
-    url: 'https://www.youtube.com/watch?v=lDKCSheBc-8',
-    thumbnailUrl: 'https://img.youtube.com/vi/lDKCSheBc-8/hqdefault.jpg',
-    difficulty: 'BEGINNER',
-    position: 'CENTER_REF',
-    isControversial: false,
-    isPublished: false,
-    tags: ['foul'],
-    laws: [{ lawId: 12 }],
-    createdAt: new Date('2025-01-20').toISOString(),
-    updatedAt: new Date('2025-01-20').toISOString(),
-  },
-]
+// Empty by default — admin populates via the dashboard
+const INITIAL_VIDEOS: VideoItem[] = []
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Singleton store — persists across requests in the same Node.js process
@@ -121,7 +36,7 @@ declare global {
 
 function getStore(): Map<string, VideoItem> {
   if (!global.__videoStore) {
-    global.__videoStore = new Map(SAMPLE_VIDEOS.map((v) => [v.id, v]))
+    global.__videoStore = new Map(INITIAL_VIDEOS.map((v) => [v.id, v]))
   }
   return global.__videoStore
 }
