@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
-import { prisma } from '@/lib/prisma'
+import { getVideoById } from '@/lib/video-store'
 import VideoForm from '../../VideoForm'
 
 export const dynamic = 'force-dynamic'
@@ -10,12 +10,8 @@ interface Props {
   params: { id: string }
 }
 
-export default async function EditVideoPage({ params }: Props) {
-  const video = await prisma.video.findUnique({
-    where: { id: params.id },
-    include: { laws: { select: { lawId: true } } },
-  })
-
+export default function EditVideoPage({ params }: Props) {
+  const video = getVideoById(params.id)
   if (!video) notFound()
 
   const initial = {
@@ -34,11 +30,8 @@ export default async function EditVideoPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500">
-        <Link href="/admin/videos" className="hover:text-gray-300 transition-colors">
-          الفيديوهات
-        </Link>
+        <Link href="/admin/videos" className="hover:text-gray-300 transition-colors">الفيديوهات</Link>
         <ChevronRight className="w-4 h-4" />
         <span className="text-gray-300 line-clamp-1">{video.titleAr}</span>
       </div>

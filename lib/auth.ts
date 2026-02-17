@@ -1,7 +1,11 @@
 import { NextAuthOptions, getServerSession } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import { compare } from 'bcryptjs'
-import { prisma } from './prisma'
+
+// ─── Demo / Mockup Mode ──────────────────────────────────────────────────────
+// Admin credentials come from environment variables — no database required.
+// Set ADMIN_EMAIL and ADMIN_PASSWORD in Vercel env vars or your .env file.
+// Defaults: admin@refereeshub.com / Admin@2025!
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -16,26 +20,22 @@ export const authOptions: NextAuthOptions = {
           throw new Error('البريد الإلكتروني وكلمة المرور مطلوبان')
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        })
+        const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@refereeshub.com'
+        const adminPassword = process.env.ADMIN_PASSWORD ?? 'Admin@2025!'
 
-        if (!user) {
-          throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة')
-        }
-
-        const isPasswordValid = await compare(credentials.password, user.password)
-
-        if (!isPasswordValid) {
+        if (
+          credentials.email.toLowerCase() !== adminEmail.toLowerCase() ||
+          credentials.password !== adminPassword
+        ) {
           throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة')
         }
 
         return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          refereeNumber: user.refereeNumber,
+          id: 'admin',
+          email: adminEmail,
+          name: process.env.ADMIN_NAME ?? 'Admin',
+          role: 'ADMIN',
+          refereeNumber: '0000',
         }
       },
     }),

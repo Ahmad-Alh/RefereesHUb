@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { getAllVideos, createVideo } from '@/lib/video-store'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,40 +15,20 @@ async function requireAdmin() {
   return session
 }
 
-// GET /api/admin/videos — list ALL videos (published + draft) for admin
+// GET /api/admin/videos — list ALL videos (published + draft)
 export async function GET() {
   if (!(await requireAdmin())) return forbidden()
-
-  const videos = await prisma.video.findMany({
-    include: {
-      laws: { select: { lawId: true } },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
-
-  return NextResponse.json({ videos })
+  return NextResponse.json({ videos: getAllVideos() })
 }
 
-// POST /api/admin/videos — create a new video
+// POST /api/admin/videos — create video
 export async function POST(req: NextRequest) {
   const session = await requireAdmin()
   if (!session) return forbidden()
 
   try {
     const body = await req.json()
-    const {
-      titleAr,
-      titleEn,
-      descriptionAr,
-      url,
-      thumbnailUrl,
-      difficulty,
-      position,
-      isControversial,
-      isPublished,
-      tags,
-      lawIds,
-    } = body
+    const { titleAr, url } = body
 
     if (!titleAr?.trim()) {
       return NextResponse.json({ error: 'العنوان مطلوب' }, { status: 400 })
@@ -57,24 +37,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'رابط الفيديو مطلوب' }, { status: 400 })
     }
 
-    const video = await prisma.video.create({
-      data: {
-        titleAr: titleAr.trim(),
-        titleEn: titleEn?.trim() || null,
-        descriptionAr: descriptionAr?.trim() || null,
-        url: url.trim(),
-        thumbnailUrl: thumbnailUrl?.trim() || null,
-        difficulty: difficulty || 'BEGINNER',
-        position: position || 'ALL',
-        isControversial: isControversial ?? false,
-        isPublished: isPublished ?? false,
-        tags: tags ?? [],
-        uploadedById: session.user.id,
-        laws: {
-          create: (lawIds as number[] | undefined)?.map((lawId) => ({ lawId })) ?? [],
-        },
-      },
-      include: { laws: true },
+    const video = createVideo({
+      titleAr: titleAr.trim(),
+      titleEn: body.titleEn?.trim() || null,
+      descriptionAr: body.descriptionAr?.trim() || null,
+      url: url.trim(),
+      thumbnailUrl: body.thumbnailUrl?.trim() || null,
+      difficulty: body.difficulty || 'BEGINNER',
+      position: body.position || 'ALL',
+      isControversial: body.isControversial ?? false,
+      isPublished: body.isPublished ?? false,
+      tags: body.tags ?? [],
+      laws: (body.lawIds as number[] | undefined)?.map((lawId) => ({ lawId })) ?? [],
     })
 
     return NextResponse.json({ video }, { status: 201 })

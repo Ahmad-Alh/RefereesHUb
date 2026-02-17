@@ -1,38 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { getPublishedVideos } from '@/lib/video-store'
 
 export const dynamic = 'force-dynamic'
 
+// Public: list published videos with optional filters
 export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url)
-    const difficulty = searchParams.get('difficulty')
-    const position = searchParams.get('position')
-    const lawId = searchParams.get('lawId')
-    const controversial = searchParams.get('controversial')
+  const { searchParams } = new URL(req.url)
+  const difficulty = searchParams.get('difficulty')
+  const position = searchParams.get('position')
+  const lawId = searchParams.get('lawId') ? parseInt(searchParams.get('lawId')!) : null
+  const controversial = searchParams.get('controversial') === 'true'
 
-    const where: Record<string, unknown> = {
-      isPublished: true,
-    }
+  let videos = getPublishedVideos()
 
-    if (difficulty) where.difficulty = difficulty
-    if (position) where.position = position
-    if (controversial === 'true') where.isControversial = true
-    if (lawId) {
-      where.laws = { some: { lawId: parseInt(lawId) } }
-    }
+  if (difficulty) videos = videos.filter((v) => v.difficulty === difficulty)
+  if (position) videos = videos.filter((v) => v.position === position)
+  if (controversial) videos = videos.filter((v) => v.isControversial)
+  if (lawId) videos = videos.filter((v) => v.laws.some((l) => l.lawId === lawId))
 
-    const videos = await prisma.video.findMany({
-      where,
-      include: { laws: { select: { lawId: true } } },
-      orderBy: { createdAt: 'desc' },
-    })
-
-    return NextResponse.json({ videos })
-  } catch (error) {
-    console.error('Error fetching videos:', error)
-    // Return empty list so public UI still loads gracefully
-    return NextResponse.json({ videos: [] })
-  }
+  return NextResponse.json({ videos })
 }
-
