@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { getDocuments, addDocument } from '@/lib/document-store'
 import fs from 'fs'
 import path from 'path'
@@ -9,25 +7,14 @@ export const dynamic = 'force-dynamic'
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'documents')
 
-function forbidden() {
-  return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
-}
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user || session.user.role !== 'ADMIN') return null
-  return session
-}
 
 // GET /api/admin/documents — list all documents
 export async function GET() {
-  if (!(await requireAdmin())) return forbidden()
   return NextResponse.json(getDocuments())
 }
 
 // POST /api/admin/documents — upload PDF
 export async function POST(req: NextRequest) {
-  if (!(await requireAdmin())) return forbidden()
 
   try {
     const formData = await req.formData()

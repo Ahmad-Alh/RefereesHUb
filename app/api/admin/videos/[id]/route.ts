@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { getVideoById, updateVideo, deleteVideo } from '@/lib/video-store'
 
 export const dynamic = 'force-dynamic'
 
-function forbidden() {
-  return NextResponse.json({ error: 'غير مصرح' }, { status: 403 })
-}
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user || session.user.role !== 'ADMIN') return null
-  return session
-}
 
 // GET /api/admin/videos/[id]
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  if (!(await requireAdmin())) return forbidden()
 
   const video = getVideoById(params.id)
   if (!video) return NextResponse.json({ error: 'الفيديو غير موجود' }, { status: 404 })
@@ -27,7 +15,6 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 // PUT /api/admin/videos/[id] — full update
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!(await requireAdmin())) return forbidden()
 
   try {
     const body = await req.json()
@@ -64,7 +51,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 // PATCH /api/admin/videos/[id] — partial update (e.g. toggle isPublished)
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!(await requireAdmin())) return forbidden()
 
   try {
     const body = await req.json()
@@ -87,7 +73,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 // DELETE /api/admin/videos/[id]
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  if (!(await requireAdmin())) return forbidden()
 
   const ok = deleteVideo(params.id)
   if (!ok) return NextResponse.json({ error: 'الفيديو غير موجود' }, { status: 404 })
