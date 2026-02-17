@@ -104,8 +104,8 @@ export default function AdminVideosPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">الفيديوهات</h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <h1 className="text-xl font-bold text-gray-900">الفيديوهات</h1>
+          <p className="text-gray-600 text-sm mt-0.5">
             {videos.length} فيديو · {videos.filter((v) => v.isPublished).length} منشور
           </p>
         </div>
@@ -125,16 +125,16 @@ export default function AdminVideosPage() {
           placeholder="بحث في الفيديوهات..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-gray-900 border border-gray-800 text-white pr-10 pl-4 py-2.5 rounded-lg text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-600"
+          className="w-full bg-white border border-gray-200 text-gray-900 pr-10 pl-4 py-2.5 rounded-lg text-sm placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-600"
         />
-        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+        <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" />
       </div>
 
       {/* Table */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 bg-gray-900 border border-gray-800 rounded-xl">
-          <Video className="w-10 h-10 text-gray-700 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">
+        <div className="text-center py-16 bg-white border border-gray-200 rounded-xl">
+          <Video className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-600 text-sm">
             {search ? `لا توجد نتائج لـ "${search}"` : 'لا توجد فيديوهات بعد'}
           </p>
           {!search && (
@@ -147,39 +147,39 @@ export default function AdminVideosPage() {
           )}
         </div>
       ) : (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-800">
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                <tr className="border-b border-gray-200">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-600 uppercase">
                     العنوان
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase w-28">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-600 uppercase w-28">
                     الحالة
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase w-24 hidden md:table-cell">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-600 uppercase w-24 hidden md:table-cell">
                     الصعوبة
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase w-24 hidden md:table-cell">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-600 uppercase w-24 hidden md:table-cell">
                     القوانين
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase w-28">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-600 uppercase w-28">
                     إجراءات
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800">
                 {filtered.map((video) => (
-                  <tr key={video.id} className="hover:bg-gray-800/40 transition-colors">
+                  <tr key={video.id} className="hover:bg-gray-100/40 transition-colors">
                     <td className="px-4 py-3">
-                      <p className="text-white font-medium line-clamp-1">{video.titleAr}</p>
+                      <p className="text-gray-900 font-medium line-clamp-1">{video.titleAr}</p>
                       {video.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {video.tags.slice(0, 3).map((tag) => (
                             <span
                               key={tag}
-                              className="text-xs bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded"
+                              className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded"
                             >
                               {tag}
                             </span>
@@ -192,8 +192,8 @@ export default function AdminVideosPage() {
                       <span
                         className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-medium ${
                           video.isPublished
-                            ? 'bg-green-950 text-green-400'
-                            : 'bg-gray-800 text-gray-400'
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-gray-100 text-gray-600'
                         }`}
                       >
                         {video.isPublished ? 'منشور' : 'مسودة'}
@@ -201,13 +201,13 @@ export default function AdminVideosPage() {
                     </td>
 
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-600">
                         {difficultyLabel[video.difficulty] || video.difficulty}
                       </span>
                     </td>
 
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-gray-600">
                         {video.laws.map((l) => l.lawId).join(', ') || '—'}
                       </span>
                     </td>
@@ -221,8 +221,8 @@ export default function AdminVideosPage() {
                           title={video.isPublished ? 'إلغاء النشر' : 'نشر'}
                           className={`p-1.5 rounded transition-colors ${
                             video.isPublished
-                              ? 'text-green-500 hover:bg-green-950'
-                              : 'text-gray-500 hover:bg-gray-800'
+                              ? 'text-green-500 hover:bg-green-50'
+                              : 'text-gray-600 hover:bg-gray-100'
                           }`}
                         >
                           {togglingId === video.id ? (
@@ -237,7 +237,7 @@ export default function AdminVideosPage() {
                         {/* Edit */}
                         <Link
                           href={`/admin/videos/${video.id}/edit`}
-                          className="p-1.5 text-gray-500 hover:text-white hover:bg-gray-800 rounded transition-colors"
+                          className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
                         >
                           <Edit className="w-4 h-4" />
                         </Link>
@@ -245,7 +245,7 @@ export default function AdminVideosPage() {
                         {/* Delete */}
                         <button
                           onClick={() => handleDelete(video.id)}
-                          className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-950 rounded transition-colors"
+                          className="p-1.5 text-gray-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

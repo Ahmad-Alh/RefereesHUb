@@ -10,8 +10,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white">لوحة التحكم</h1>
-        <p className="text-gray-500 text-sm mt-0.5">نظرة عامة على المحتوى</p>
+        <h1 className="text-xl font-bold text-gray-900">لوحة التحكم</h1>
+        <p className="text-gray-600 text-sm mt-0.5">نظرة عامة على المحتوى</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -20,8 +20,8 @@ export default function AdminDashboard() {
         <StatCard label="إجمالي الفيديوهات" value={total} icon={Video} color="blue" />
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-gray-300 mb-4">إجراءات سريعة</h2>
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-gray-700 mb-4">إجراءات سريعة</h2>
         <div className="flex flex-wrap gap-3">
           <Link
             href="/admin/videos/new"
@@ -42,24 +42,24 @@ export default function AdminDashboard() {
 }
 
 function StatCard({ label, value, icon: Icon, color }: { label: string; value: number; icon: React.ElementType; color: 'green' | 'yellow' | 'blue' }) {
-  const colors = { green: 'text-green-400 bg-green-950', yellow: 'text-yellow-400 bg-yellow-950', blue: 'text-blue-400 bg-blue-950' }
+  const colors = { green: 'text-green-700 bg-green-50', yellow: 'text-yellow-700 bg-yellow-50', blue: 'text-blue-700 bg-blue-50' }
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-white border border-gray-200 rounded-xl p-4">
       <div className={`w-8 h-8 rounded-lg ${colors[color]} flex items-center justify-center mb-3`}>
         <Icon className="w-4 h-4" />
       </div>
-      <p className="text-2xl font-bold text-white">{value}</p>
-      <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-xs text-gray-600 mt-0.5">{label}</p>
     </div>
   )
 }
 
 function NavCard({ href, icon: Icon, title, description }: { href: string; icon: React.ElementType; title: string; description: string }) {
   return (
-    <Link href={href} className="bg-gray-900 border border-gray-800 rounded-xl p-4 hover:border-green-700 transition-colors">
+    <Link href={href} className="bg-white border border-gray-200 rounded-xl p-4 hover:border-green-700 transition-colors">
       <Icon className="w-5 h-5 text-green-500 mb-3" />
-      <h3 className="text-sm font-medium text-white mb-1">{title}</h3>
-      <p className="text-xs text-gray-500">{description}</p>
+      <h3 className="text-sm font-medium text-gray-900 mb-1">{title}</h3>
+      <p className="text-xs text-gray-600">{description}</p>
     </Link>
   )
 }

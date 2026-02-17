@@ -27,17 +27,17 @@ function AdminSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname()
 
   return (
-    <aside className="flex flex-col h-full bg-gray-900 border-r border-gray-800 w-56">
+    <aside className="flex flex-col h-full bg-white border-r border-gray-200 w-56">
       {/* Brand */}
-      <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+      <div className="p-5 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
             <Shield className="w-4 h-4 text-white" />
           </div>
-          <span className="text-white font-bold text-sm">RefereesHub</span>
+          <span className="text-gray-900 font-bold text-sm">RefereesHub</span>
         </div>
         {onClose && (
-          <button onClick={onClose} className="text-gray-400 hover:text-white lg:hidden">
+          <button onClick={onClose} className="text-gray-600 hover:text-gray-900 lg:hidden">
             <X className="w-5 h-5" />
           </button>
         )}
@@ -55,7 +55,7 @@ function AdminSidebar({ onClose }: { onClose?: () => void }) {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
                   ? 'bg-green-600 text-white'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
@@ -66,15 +66,15 @@ function AdminSidebar({ onClose }: { onClose?: () => void }) {
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-gray-800 space-y-1">
+      <div className="p-3 border-t border-gray-200 space-y-1">
         <Link
           href="/"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
         >
           <span className="text-xs">←</span>
           العودة للتطبيق
         </Link>
-        <div className="w-full px-3 py-2.5 rounded-lg text-xs text-amber-300 bg-amber-950/50 border border-amber-900">
+        <div className="w-full px-3 py-2.5 rounded-lg text-xs text-amber-800 bg-amber-50 border border-amber-200">
           وضع تجريبي: اللوحة مفتوحة للعرض فقط
         </div>
       </div>
@@ -95,7 +95,7 @@ export default function AdminShell({
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-950 flex" dir="rtl">
+    <div className="min-h-screen bg-gray-50 flex" dir="rtl">
       {/* Sidebar - desktop */}
       <div className="hidden lg:flex flex-shrink-0">
         <AdminSidebar />
@@ -105,7 +105,7 @@ export default function AdminShell({
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-black/30"
             onClick={() => setSidebarOpen(false)}
           />
           <div className="relative z-10">
@@ -117,16 +117,16 @@ export default function AdminShell({
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar (mobile) */}
-        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-gray-900 border-b border-gray-800">
+        <header className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="text-gray-400 hover:text-white"
+            className="text-gray-600 hover:text-gray-900"
           >
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-green-500" />
-            <span className="text-white font-bold text-sm">لوحة التحكم</span>
+            <span className="text-gray-900 font-bold text-sm">لوحة التحكم</span>
           </div>
         </header>
 

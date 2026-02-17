@@ -82,8 +82,8 @@ export default function AdminDocumentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-white">المستندات</h1>
-          <p className="text-gray-400 text-sm mt-0.5">{documents.length} مستند</p>
+          <h1 className="text-xl font-bold text-gray-900">المستندات</h1>
+          <p className="text-gray-600 text-sm mt-0.5">{documents.length} مستند</p>
         </div>
         <button
           onClick={() => {
@@ -99,36 +99,36 @@ export default function AdminDocumentsPage() {
 
       {/* Upload Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-xl border border-gray-800 p-5 mb-6">
-          <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
-            <Upload className="w-4 h-4 text-green-400" />
+        <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+          <h2 className="text-gray-900 font-semibold mb-4 flex items-center gap-2">
+            <Upload className="w-4 h-4 text-green-700" />
             رفع ملف PDF
           </h2>
           {error && (
-            <div className="mb-4 p-3 bg-red-950 border border-red-800 rounded-lg text-red-400 text-sm">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
             </div>
           )}
           <form onSubmit={handleUpload} className="space-y-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">العنوان</label>
+              <label className="block text-sm text-gray-600 mb-1.5">العنوان</label>
               <input
                 type="text"
                 value={titleAr}
                 onChange={(e) => setTitleAr(e.target.value)}
-                className="w-full bg-gray-800 text-white px-4 py-2.5 rounded-lg border border-gray-700 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors placeholder:text-gray-500"
+                className="w-full bg-gray-100 text-gray-900 px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors placeholder:text-gray-600"
                 placeholder="اسم المستند"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">ملف PDF</label>
+              <label className="block text-sm text-gray-600 mb-1.5">ملف PDF</label>
               <input
                 ref={fileRef}
                 type="file"
                 accept=".pdf,application/pdf"
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                className="w-full bg-gray-800 text-gray-300 px-4 py-2.5 rounded-lg border border-gray-700 cursor-pointer file:ml-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-green-600 file:text-white file:text-sm file:cursor-pointer"
+                className="w-full bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg border border-gray-300 cursor-pointer file:ml-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-green-600 file:text-white file:text-sm file:cursor-pointer"
                 required
               />
             </div>
@@ -159,7 +159,7 @@ export default function AdminDocumentsPage() {
           <Loader2 className="w-6 h-6 animate-spin text-green-500" />
         </div>
       ) : documents.length === 0 ? (
-        <div className="text-center py-16 text-gray-500">
+        <div className="text-center py-16 text-gray-600">
           <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p>لا توجد مستندات مرفوعة</p>
         </div>
@@ -168,14 +168,14 @@ export default function AdminDocumentsPage() {
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center gap-3 p-4 bg-gray-900 rounded-xl border border-gray-800 hover:border-gray-700 transition-colors"
+              className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-colors"
             >
-              <div className="w-9 h-9 bg-red-950 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FileText className="w-5 h-5 text-red-400" />
+              <div className="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                <FileText className="w-5 h-5 text-red-700" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-medium truncate">{doc.titleAr}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-gray-900 font-medium truncate">{doc.titleAr}</p>
+                <p className="text-xs text-gray-600 mt-0.5">
                   {doc.fileName} · {formatFileSize(doc.fileSize)}
                 </p>
               </div>
@@ -184,13 +184,13 @@ export default function AdminDocumentsPage() {
                   href={doc.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-green-400 hover:text-green-300 transition-colors px-2 py-1 rounded hover:bg-green-950"
+                  className="text-xs text-green-700 hover:text-green-800 transition-colors px-2 py-1 rounded hover:bg-green-50"
                 >
                   عرض
                 </a>
                 <button
                   onClick={() => handleDelete(doc.id)}
-                  className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-950 rounded-lg transition-colors"
+                  className="p-1.5 text-gray-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
