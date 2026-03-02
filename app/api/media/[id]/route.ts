@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { promises as fs } from 'fs'
 import { getMediaFile } from '@/lib/media-store'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +12,12 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'الملف غير موجود' }, { status: 404 })
   }
 
-  const bytes = Buffer.from(media.bytesBase64, 'base64')
+  let bytes: Buffer
+  try {
+    bytes = await fs.readFile(media.filePath)
+  } catch {
+    return NextResponse.json({ error: 'تعذّر قراءة الملف' }, { status: 410 })
+  }
 
   return new NextResponse(bytes, {
     headers: {

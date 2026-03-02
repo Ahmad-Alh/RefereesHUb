@@ -201,12 +201,27 @@ export default function VideoForm({ initial, videoId }: VideoFormProps) {
         </Field>
 
         <Field label="أو ارفع ملف فيديو (اختياري)">
-          <input
-            type="file"
-            accept="video/*"
-            onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
-            className={inputClass}
-          />
+          <label className="block rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:border-green-400 transition-colors cursor-pointer p-4">
+            <input
+              type="file"
+              accept="video/*"
+              onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)}
+              className="sr-only"
+            />
+            <div className="text-sm text-gray-700 text-center">
+              {videoFile ? (
+                <>
+                  <p className="font-medium text-gray-900">{videoFile.name}</p>
+                  <p className="text-xs text-gray-600 mt-1">{(videoFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-medium">اختر ملف فيديو</p>
+                  <p className="text-xs text-gray-600 mt-1">MP4 / MOV / WebM</p>
+                </>
+              )}
+            </div>
+          </label>
         </Field>
 
         <Field label="رابط الصورة المصغرة (اختياري)">
