@@ -123,14 +123,29 @@ export default function AdminDocumentsPage() {
             </div>
             <div>
               <label className="block text-sm text-gray-600 mb-1.5">ملف PDF</label>
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".pdf,application/pdf"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                className="w-full bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg border border-gray-300 cursor-pointer file:ml-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-green-600 file:text-white file:text-sm file:cursor-pointer"
-                required
-              />
+              <label className="block rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:border-green-400 transition-colors cursor-pointer p-4">
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                  className="sr-only"
+                  required
+                />
+                <div className="text-sm text-gray-700 text-center">
+                  {file ? (
+                    <>
+                      <p className="font-medium text-gray-900">{file.name}</p>
+                      <p className="text-xs text-gray-600 mt-1">{formatFileSize(file.size)}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-medium">اضغط لاختيار ملف PDF</p>
+                      <p className="text-xs text-gray-600 mt-1">أو اسحب الملف هنا</p>
+                    </>
+                  )}
+                </div>
+              </label>
             </div>
             <button
               type="submit"
